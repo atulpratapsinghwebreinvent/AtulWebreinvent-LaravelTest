@@ -59,10 +59,12 @@
 </div>
 
 <script>
+    //create constant for link to avoid url error
     const apiBaseUrl = '/api/posts';
     let editMode = false;
     let currentPostId = null;
 
+    //Code for display the message according operation
     const showMessage = (message, type = 'success') => {
         const messageElement = document.getElementById('message');
         messageElement.textContent = message;
@@ -73,10 +75,12 @@
         }, 3000);
     };
 
+    //Code for generate slug random with the help of title input
     const generateSlug = (title) => {
         return title.toLowerCase();
     };
 
+    //Code to fetch the all post from the database
     const fetchPosts = () => {
         axios.get(apiBaseUrl)
             .then(response => {
@@ -99,6 +103,7 @@
             })
     };
 
+    //Code for save the input into the database
     const savePost = (event) => {
         event.preventDefault();
         const title = document.getElementById('title').value;
@@ -123,6 +128,7 @@
         }
     };
 
+    //Code to delete the post and refresh the page
     window.deletePost = (id) => {
         if (confirm('Are you sure you want to delete this post?')) {
             axios.delete(`${apiBaseUrl}/${id}`)
@@ -134,6 +140,7 @@
         }
     };
 
+    //Code to edit the post and refresh the page
     window.editPost = (id, title, content) => {
         document.getElementById('title').value = title;
         document.getElementById('content').value = content;
@@ -142,6 +149,7 @@
         document.getElementById('formContainer').style.display = 'block';
     };
 
+    //Code to display comments option in the page
     window.viewComments = (postId) => {
         currentPostId = postId;
         document.getElementById('commentFormContainer').style.display = 'block';
@@ -158,6 +166,7 @@
 
     };
 
+    //Code to save the comment into the database
     const saveComment = (event) => {
         event.preventDefault();
         const content = document.getElementById('commentContent').value;
@@ -171,7 +180,7 @@
 
     };
 
-
+    //Code for take the event performed in the Form
     document.addEventListener('DOMContentLoaded', () => {
         const postForm = document.getElementById('postForm');
         const cancelBtn = document.getElementById('cancelBtn');
@@ -183,6 +192,8 @@
         commentCancelBtn.addEventListener('click', () => {
             document.getElementById('commentFormContainer').style.display = 'none';
         });
+
+        //Called the function to fetch posts
         fetchPosts();
     });
 </script>
