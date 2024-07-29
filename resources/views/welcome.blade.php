@@ -1,108 +1,192 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Atul Pratap Singh | WebReinvent Laravel Test</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atul Pratap Singh | Webreinvent Laravel Test</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <style>
+        .form-container, .comment-form-container {
+            display: block;
+        }
+        .comment-form-container {
+            display: none;
+            margin-top: 20px;
+        }
+        .comment-list {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-<h1 class="text-center mt-5">Atul Pratap Singh | WebReinvent Laravel Test</h1>
+<div class="container mt-4">
+    <h1>Atul Pratap Singh | Webreinvent Laravel Test</h1>
+    <div id="message" class="alert alert-success d-none"></div>
 
-<div class="container mt-5">
+    <div id="formContainer" class="form-container mb-3">
+        <form id="postForm">
+            <div class="form-group">
+                <label for="title">Post Title</label>
+                <input type="text" id="title" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="content">Post Content</label>
+                <textarea id="content" class="form-control" required></textarea>
+            </div>
+            <button type="submit" id="submitBtn" class="btn btn-primary">Add Post</button>
+            <button type="reset" id="cancelBtn" class="btn btn-secondary">Reset</button>
+        </form>
+    </div>
 
-    <h2>Create Post From Here</h2>
-    <form id="create-post-form-data">
-        <div class="form-group">
-            <label class="post-title">Post Title</label>
-            <input type="text" class="form-control mt-2" id="post-title" placeholder="Enter the Post Title" required>
+    <ul id="postList" class="list-group">
+    </ul>
+
+    <div id="commentFormContainer" class="comment-form-container">
+        <h3 id="commentFormTitle">Add Comment</h3>
+        <form id="commentForm">
+            <div class="form-group">
+                <label for="commentContent">Comment</label>
+                <textarea id="commentContent" class="form-control" required></textarea>
+            </div>
+            <button type="submit" id="commentSubmitBtn" class="btn btn-primary">Add Comment</button>
+            <button type="reset" id="commentCancelBtn" class="btn btn-secondary">Reset</button>
+        </form>
+        <div id="commentList" class="comment-list">
+
         </div>
-        <div class="form-group">
-            <label class="post-title">Post Content</label>
-            <input type="text" class="form-control mt-2" id="post-content" placeholder="Enter the Post content" required>
-        </div>
-
-        <button type="submit" class="btn btn-success mt-2">Create Post</button>
-
-    </form>
-    <div id="root" class="mt-5">
-
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
 
 <script>
-    document.addEventListener('DomContentLoader', function ()
-    {
+    const apiBaseUrl = '/api/posts';
+    let editMode = false;
+    let currentPostId = null;
 
-        // display the all post here with the help of javascript
-        //creating one function to fetch all posts
+    const showMessage = (message, type = 'success') => {
+        const messageElement = document.getElementById('message');
+        messageElement.textContent = message;
+        messageElement.className = `alert alert-${type}`;
+        messageElement.classList.remove('d-none');
+        setTimeout(() => {
+            messageElement.classList.add('d-none');
+        }, 3000);
+    };
 
-        fetchAllPostFormDatabase();
+    const generateSlug = (title) => {
+        return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    };
 
-
-        //function define
-
-        function fetchAllPostFormDatabase()
-        {
-            axios.get('/api/posts')
-                .then(response =>
-                {
-                    let postsData = response.data;
-
-                    let postListData = '';
-
-                    postsData.forEach(
-                        posts =>
-                        {
-                            postListData +=
-                                ` <div class="card" style="width: 18rem;">
-  <div class="card-body">
-    <h5 class="card-title">Card title</h5>
-    <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-
-  </div>
-</div>`;
-                        }
-                    );
-                    document.getElementById('root').innerHTML = postListData;
+    const fetchPosts = () => {
+        axios.get(apiBaseUrl)
+            .then(response => {
+                const postList = document.getElementById('postList');
+                postList.innerHTML = '';
+                response.data.forEach(post => {
+                    const postItem = document.createElement('li');
+                    postItem.className = 'list-group-item';
+                    const escapedTitle = post.title;
+                    const escapedContent = post.content;
+                    postItem.innerHTML = `
+                        <h5>${post.title}</h5>
+                        <p>${post.content}</p>
+                        <small>Comments: ${post.comments_count}</small>
+                        <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${escapedTitle}', '${escapedContent}')">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
+                        <button class="btn btn-info btn-sm" onclick="viewComments(${post.id})">Add Comments</button>
+                    `;
+                    postList.appendChild(postItem);
                 });
+            })
+    };
+
+    const savePost = (event) => {
+        event.preventDefault();
+        const title = document.getElementById('title').value;
+        const content = document.getElementById('content').value;
+        const slug = generateSlug(title);
+
+        const postData = { title, slug, content };
+
+        if (editMode && currentPostId !== null) {
+            axios.put(`${apiBaseUrl}/${currentPostId}`, postData)
+                .then(response => {
+                    showMessage('Post updated successfully');
+                    fetchPosts();
+                })
+        } else {
+            axios.post(apiBaseUrl, postData)
+                .then(response => {
+                    showMessage('Post created successfully');
+                    fetchPosts();
+                })
+
         }
+    };
+
+    window.deletePost = (id) => {
+        if (confirm('Are you sure you want to delete this post?')) {
+            axios.delete(`${apiBaseUrl}/${id}`)
+                .then(response => {
+                    showMessage('Post deleted successfully', 'danger');
+                    fetchPosts();
+                })
+
+        }
+    };
+
+    window.editPost = (id, title, content) => {
+        document.getElementById('title').value = title;
+        document.getElementById('content').value = content;
+        currentPostId = id;
+        editMode = true;
+        document.getElementById('formContainer').style.display = 'block';
+    };
+
+    window.viewComments = (postId) => {
+        currentPostId = postId;
+        document.getElementById('commentFormContainer').style.display = 'block';
+
+        axios.get(`${apiBaseUrl}/${postId}/comments`)
+            .then(response => {
+                const commentList = document.getElementById('commentList');
+                commentList.innerHTML = '';
+                response.data.forEach(comment => {
+                    const commentItem = document.createElement('div');
+                    commentList.appendChild(commentItem);
+                });
+            })
+
+    };
+
+    const saveComment = (event) => {
+        event.preventDefault();
+        const content = document.getElementById('commentContent').value;
+
+        axios.post(`${apiBaseUrl}/${currentPostId}/comments`, { content })
+            .then(response => {
+                showMessage('Comment added successfully');
+                viewComments(currentPostId);
+                document.getElementById('commentContent').value = '';
+            })
+
+    };
 
 
-        //create form and send data
+    document.addEventListener('DOMContentLoaded', () => {
+        const postForm = document.getElementById('postForm');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const commentForm = document.getElementById('commentForm');
+        const commentCancelBtn = document.getElementById('commentCancelBtn');
 
-        document.getElementById('create-post-form-data').addEventListener('submit', function (e)
-        {
-            e.preventDefault();
-
-            //get the input field to store data
-
-            let postTitle = document.getElementById('post-title').value;
-            let postContent = document.getElementById('post-content').value;
-            console.log('Title', postTitle);
-
-            axios.post('/api/posts', {
-
-                title: postTitle,
-                content: postContent
-            }).then(response => {
-                console.log('Response: ', response.data);
-                alert('Post Created Successfully!');
-
-                //call the all fetch post
-
-                fetchAllPostFormDatabase();
-            }).catch(error => {
-                alert('Something Went Wrong!');
-                console.error('Error', error);
-            });
-
+        postForm.addEventListener('submit', savePost);
+        commentForm.addEventListener('submit', saveComment);
+        commentCancelBtn.addEventListener('click', () => {
+            document.getElementById('commentFormContainer').style.display = 'none';
         });
-    });
 
+        fetchPosts();
+    });
 </script>
 </body>
 </html>

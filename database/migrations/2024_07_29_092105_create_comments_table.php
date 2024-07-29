@@ -9,21 +9,16 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('post_id');
             $table->text('content');
+            $table->foreignId('post_id')->constrained()->onDelete('cascade');
             $table->timestamps();
-
-            // Define foreign key relationship
-            $table->foreign('post_id')
-                ->references('id')
-                ->on('posts')
-                ->onDelete('cascade');
         });
     }
+
 
     /**
      * Reverse the migrations.

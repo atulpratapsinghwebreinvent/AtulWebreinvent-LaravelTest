@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\CommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,3 +22,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::apiResource('posts', PostController::class);
+Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
+Route::get('/posts/{post}/comments', [CommentController::class, 'index']);

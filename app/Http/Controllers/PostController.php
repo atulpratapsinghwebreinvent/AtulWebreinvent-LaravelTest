@@ -2,55 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Posts;
-use App\Http\Resources\PostResource;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        return PostResource::collection(Posts::withCount('comments')->get());
+        //
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-        ]);
-
-        $post = Posts::create([
-            'title' => $request->title,
-            'slug' => str_slug($request->title),
-            'content' => $request->content,
-        ]);
-
-        return new PostResource($post);
+        //
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-        ]);
-
-        $post = Posts::findOrFail($id);
-        $post->update([
-            'title' => $request->title,
-            'slug' => str_slug($request->title),
-            'content' => $request->content,
-        ]);
-
-        return new PostResource($post);
+        //
     }
 
-    public function destroy($id)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
     {
-        $post = Posts::findOrFail($id);
-        $post->delete();
+        //
+    }
 
-        return response()->json(null, 204);
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
     }
 }
