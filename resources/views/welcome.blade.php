@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Atul Pratap Singh | Webreinvent Laravel Test</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <style>
         .form-container, .comment-form-container {
@@ -20,7 +20,7 @@
     </style>
 </head>
 <body>
-<div class="container mt-4">
+<div class="container text-center mt-4">
     <h1>Atul Pratap Singh | Webreinvent Laravel Test</h1>
     <div id="message" class="alert alert-success d-none"></div>
 
@@ -74,7 +74,7 @@
     };
 
     const generateSlug = (title) => {
-        return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        return title.toLowerCase();
     };
 
     const fetchPosts = () => {
@@ -93,8 +93,7 @@
                         <small>Comments: ${post.comments_count}</small>
                         <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${escapedTitle}', '${escapedContent}')">Edit</button>
                         <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
-                        <button class="btn btn-info btn-sm" onclick="viewComments(${post.id})">Add Comments</button>
-                    `;
+                        <button class="btn btn-info btn-sm" onclick="viewComments(${post.id})">Add Comments</button>`;
                     postList.appendChild(postItem);
                 });
             })
@@ -108,7 +107,7 @@
 
         const postData = { title, slug, content };
 
-        if (editMode && currentPostId !== null) {
+        if (editMode && currentPostId != null) {
             axios.put(`${apiBaseUrl}/${currentPostId}`, postData)
                 .then(response => {
                     showMessage('Post updated successfully');
@@ -184,7 +183,6 @@
         commentCancelBtn.addEventListener('click', () => {
             document.getElementById('commentFormContainer').style.display = 'none';
         });
-
         fetchPosts();
     });
 </script>
