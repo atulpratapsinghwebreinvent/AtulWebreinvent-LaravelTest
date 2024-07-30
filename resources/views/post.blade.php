@@ -39,9 +39,24 @@
             <button type="reset" id="cancelBtn" class="btn btn-secondary">Reset</button>
         </form>
     </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Post Comments</h2>
+                <div id="commentList" class="comment-list">
 
-    <ul id="postList" class="list-group">
-    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <ul id="postList" class="list-group">
+
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+
 
     <div id="commentFormContainer" class="comment-form-container">
         <h3 id="commentFormTitle">Add Comment</h3>
@@ -189,11 +204,48 @@
             })
 
     };
+    // Function to fetch and display comments for a post
     const viewComments = (postId) => {
-        window.open(`${apiBaseUrl}/${postId}/comments`,'_blank');
-        currentPostId = postId;
+        const commentList = document.getElementById('commentList');
+
+        axios.get(`${apiBaseUrl}/${postId}`)
+            .then(postResponse => {
+                const postTitle = postResponse.data.title;
+
+                axios.get(`${apiBaseUrl}/${postId}/comments`)
+                    .then(commentsResponse => {
+                        const comments = commentsResponse.data;
+
+
+                        commentList.innerHTML = '';
+
+
+                        const postTitleElement = document.createElement('h3');
+                        postTitleElement.textContent = `Title: ${postTitle}`;
+                        commentList.appendChild(postTitleElement);
+
+
+                        if (comments.length === 0) {
+                            const noCommentsElement = document.createElement('p');
+                            noCommentsElement.textContent = 'No comments found.';
+                            commentList.appendChild(noCommentsElement);
+                        } else {
+                            // Iterate through comments and create elements
+                            comments.forEach(comment => {
+                                const commentItem = document.createElement('div');
+                                commentItem.className = 'comment-item';
+                                commentItem.innerHTML = `
+                                Comment:<p>${comment.content}</p>
+                            `;
+                                commentList.appendChild(commentItem);
+                            });
+                        }
+                    })
+            })
 
     };
+
+
 
     const resetForm = () => {
         document.getElementById('submitBtn').textContent = 'Add Post';
@@ -215,9 +267,11 @@
             .then(response => {
                 showMessage('Comment added successfully');
                 document.getElementById('commentContent').value = '';
+                document.getElementById('commentFormContainer').style.display = 'none'; // Hide comment form
             })
 
     };
+
 
 
     //Code for take the event performed in the Form
