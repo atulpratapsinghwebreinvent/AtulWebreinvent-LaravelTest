@@ -25,15 +25,17 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::apiResource('posts', PostController::class);
 Route::apiResource('tasks', TaskController::class);
 
-Route::prefix('')->group(function () {
-    Route::prefix('posts')->group(function () {
-        Route::post('/{post}/comments', [CommentController::class, 'store']);
-        Route::get('/{post}/comments', [CommentController::class, 'index']);
-    });
+
+Route::prefix('posts')->group(function () {
+    Route::post('/{post}/comments', [CommentController::class, 'store']);
+    Route::get('/{post}/comments', [CommentController::class, 'index']);
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+});
+
 
     Route::prefix('tasks')->group(function () {
         Route::post('/{task}/comments', [CommentController::class, 'store']);
         Route::get('/{task}/comments', [CommentController::class, 'index']);
+        Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
     });
-});
 

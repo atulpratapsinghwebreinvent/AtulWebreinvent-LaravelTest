@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Comment;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -47,4 +48,13 @@ class PostController extends Controller
         $post->delete();
         return response()->json(null, 204);
     }
+
+
+    public function viewComments($postId) {
+        $post = Post::findOrFail($postId);
+        $comments = $post->comments;
+
+        return view('commentsView', compact('post', 'comments'));
+    }
+
 }

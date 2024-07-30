@@ -98,7 +98,8 @@
                         <small>Comments: ${post.comments_count}</small>
                         <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${escapedTitle}', '${escapedContent}')">Edit</button>
                         <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
-                        <button class="btn btn-info btn-sm" onclick="viewComments(${post.id})">Add Comments</button>`;
+                          <button class="btn btn-info btn-sm" onclick="addComments(${post.id})">Add Comments</button>
+                        <button class="btn btn-primary btn-sm" onclick="viewComments(${post.id})">View Comments</button>`;
                     postList.appendChild(postItem);
                 });
             })
@@ -178,6 +179,11 @@
                 viewComments(currentPostId);
                 document.getElementById('commentContent').value = '';
             })
+
+    };
+    window.viewComments = (postId) => {
+        window.open(`${apiBaseUrl}/${postId}/comments`,'_blank');
+        currentPostId = postId;
 
     };
 

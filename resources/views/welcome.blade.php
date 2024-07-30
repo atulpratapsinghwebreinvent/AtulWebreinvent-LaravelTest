@@ -98,7 +98,8 @@
                         <small>Comments: ${post.comments_count}</small>
                         <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${escapedTitle}', '${escapedContent}')">Edit</button>
                         <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
-                        <button class="btn btn-info btn-sm" onclick="viewComments(${post.id})">Add Comments</button>`;
+                        <button class="btn btn-info btn-sm" onclick="addComments(${post.id})">Add Comments</button>
+                        <button class="btn btn-primary btn-sm" onclick="viewComments(${post.id})">View Comments</button>`;
                     postList.appendChild(postItem);
                 });
             })
@@ -151,7 +152,7 @@
     };
 
     //Code to display comments option in the page
-    window.viewComments = (postId) => {
+    window.addComments = (postId) => {
         currentPostId = postId;
         document.getElementById('commentFormContainer').style.display = 'block';
 
@@ -166,6 +167,11 @@
             })
 
     };
+    window.viewComments = (postId) => {
+        window.open(`${apiBaseUrl}/${postId}/comments`,'_blank');
+        currentPostId = postId;
+
+    };
 
     //Code to save the comment into the database
     const saveComment = (event) => {
@@ -175,16 +181,16 @@
         axios.post(`${apiBaseUrl}/${currentPostId}/comments`, { content })
             .then(response => {
                 showMessage('Comment added successfully');
-                viewComments(currentPostId);
                 document.getElementById('commentContent').value = '';
             })
 
     };
 
+
     //Code for take the event performed in the Form
     document.addEventListener('DOMContentLoaded', () => {
         const postForm = document.getElementById('postForm');
-        const cancelBtn = document.getElementById('cancelBtn');
+
         const commentForm = document.getElementById('commentForm');
         const commentCancelBtn = document.getElementById('commentCancelBtn');
 
