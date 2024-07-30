@@ -29,11 +29,11 @@
         <form id="postForm">
             <div class="form-group">
                 <label for="title">Task Title</label>
-                <input type="text" id="title" class="form-control" required>
+                <input type="text" id="title" class="form-control">
             </div>
             <div class="form-group">
                 <label for="content">Task Description</label>
-                <textarea id="content" class="form-control" required></textarea>
+                <textarea id="content" class="form-control"></textarea>
             </div>
             <button type="submit" id="submitBtn" class="btn btn-primary">Add Task</button>
             <button type="reset" id="cancelBtn" class="btn btn-secondary">Reset</button>
@@ -83,6 +83,7 @@
     const fetchTasks = () => {
         axios.get(apiBaseUrl)
             .then(response => {
+                const sortedPosts = response.data.sort((a, b) => b.id - a.id);
                 const postList = document.getElementById('postList');
                 postList.innerHTML = '';
                 response.data.forEach(post => {
@@ -106,8 +107,14 @@
     //Code for save the input into the database
     const savePost = (event) => {
         event.preventDefault();
-        const title = document.getElementById('title').value;
-        const description = document.getElementById('content').value;
+        const titleInput = document.getElementById('title');
+        const contentInput = document.getElementById('content');
+        const title = titleInput.value;
+        const description = contentInput.value;
+        if (!title.trim()) {
+            showMessage('Task Title is required', 'danger');
+            return;
+        }
         const slug = generateSlug(title);
 
         const postData = { title, slug, description };
@@ -116,6 +123,9 @@
             axios.put(`${apiBaseUrl}/${currentPostId}`, postData)
                 .then(response => {
                     showMessage('Task updated successfully');
+                    titleInput.value = '';
+                    contentInput.value = '';
+                    document.getElementById('submitBtn').textContent = 'Add Task';
                     fetchTasks();
                 })
         } else {
@@ -123,6 +133,8 @@
                 .then(response => {
                     showMessage('Task created successfully');
                     fetchTasks();
+                    titleInput.value = '';
+                    contentInput.value = '';
                 })
 
         }
@@ -146,6 +158,7 @@
         document.getElementById('content').value = description;
         currentPostId = id;
         editMode = true;
+        document.getElementById('submitBtn').textContent = 'Update Task';
         document.getElementById('formContainer').style.display = 'block';
     };
 
@@ -184,6 +197,14 @@
 
     };
 
+    const resetForm = () => {
+        document.getElementById('submitBtn').textContent = 'Add Task';
+        editMode = false;
+        currentPostId = null;
+    };
+
+    const postForm = document.getElementById('postForm');
+    postForm.addEventListener('reset', resetForm);
 
     //Code for take the event performed in the Form
     document.addEventListener('DOMContentLoaded', () => {
