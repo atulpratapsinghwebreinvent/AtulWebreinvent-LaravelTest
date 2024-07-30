@@ -7,15 +7,19 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" crossorigin="anonymous">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <style>
-        .form-container, .comment-form-container {
-            display: block;
-        }
         .comment-form-container {
             display: none;
             margin-top: 20px;
         }
         .comment-list {
             margin-top: 20px;
+        }
+        .form-container {
+            max-width: 600px; /* Adjust the maximum width of the form container */
+            margin: auto; /* Center align the form container */
+            padding: 20px; /* Add padding inside the form container */
+            border: 1px solid #ccc; /* Optional: Add a border */
+            border-radius: 8px; /* Optional: Add border radius */
         }
     </style>
 </head>
@@ -33,9 +37,9 @@
             </div>
             <div class="form-group">
                 <label for="content">Post Content</label>
-                <textarea id="content" class="form-control"></textarea>
+                <textarea id="content" class="form-control" rows="5"></textarea>
             </div>
-            <button type="submit" id="submitBtn" class="btn btn-primary">Add Post</button>
+            <button type="submit" id="submitBtn" class="btn btn-primary mr-2">Add Post</button>
             <button type="reset" id="cancelBtn" class="btn btn-secondary">Reset</button>
         </form>
     </div>
