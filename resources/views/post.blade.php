@@ -48,6 +48,7 @@
                 </div>
             </div>
             <div class="col-md-6">
+                <h2>Post List</h2>
                 <ul id="postList" class="list-group">
 
                 </ul>
@@ -230,7 +231,6 @@
                             noCommentsElement.textContent = 'No comments found.';
                             commentList.appendChild(noCommentsElement);
                         } else {
-                            // Iterate through comments and create elements
                             comments.forEach(comment => {
                                 const commentItem = document.createElement('div');
                                 commentItem.className = 'comment-item';

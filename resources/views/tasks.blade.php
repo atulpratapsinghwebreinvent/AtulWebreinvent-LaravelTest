@@ -40,8 +40,22 @@
         </form>
     </div>
 
-    <ul id="postList" class="list-group">
-    </ul>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Task Comments</h2>
+                <div id="commentList" class="comment-list">
+
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2>Task List</h2>
+                <ul id="postList" class="list-group">
+
+                </ul>
+            </div>
+        </div>
+    </div>
 
     <div id="commentFormContainer" class="comment-form-container">
         <h3 id="commentFormTitle">Add Comment</h3>
@@ -58,6 +72,7 @@
 </div>
 
 <script>
+
     //create constant for link to avoid url error
     const apiBaseUrl = '/api/tasks';
     let editMode = false;
@@ -179,10 +194,41 @@
 
     };
     const viewComments = (postId) => {
-        window.open(`${apiBaseUrl}/${postId}/comments`,'_blank');
-        currentPostId = postId;
+        const commentList = document.getElementById('commentList');
+
+        axios.get(`${apiBaseUrl}/${postId}`)
+            .then(postResponse => {
+                const TaskTitle = postResponse.data.title;
+                console.log(TaskTitle);
+                axios.get(`${apiBaseUrl}/${postId}/comments`)
+                    .then(commentsResponse => {
+                        const comments = commentsResponse.data;
+                        commentList.innerHTML = '';
+
+                        const postTitleElement = document.createElement('h3');
+                        postTitleElement.textContent = `Title: ${TaskTitle}`;
+                        commentList.appendChild(postTitleElement);
+
+
+                        if (comments.length === 0) {
+                            const noCommentsElement = document.createElement('p');
+                            noCommentsElement.textContent = 'No comments found.';
+                            commentList.appendChild(noCommentsElement);
+                        } else {
+                            comments.forEach(comment => {
+                                const commentItem = document.createElement('div');
+                                commentItem.className = 'comment-item';
+                                commentItem.innerHTML = `
+                                Comment:<p>${comment.content}</p>
+                            `;
+                                commentList.appendChild(commentItem);
+                            });
+                        }
+                    })
+            })
 
     };
+
     //Code to save the comment into the database
     const saveComment = (event) => {
         event.preventDefault();
@@ -193,6 +239,7 @@
                 showMessage('Comment added successfully');
 
                 document.getElementById('commentContent').value = '';
+                document.getElementById('commentFormContainer').style.display = 'none';
             })
 
     };
@@ -201,6 +248,7 @@
         document.getElementById('submitBtn').textContent = 'Add Task';
         editMode = false;
         currentPostId = null;
+
     };
 
     const postForm = document.getElementById('postForm');
@@ -219,7 +267,6 @@
             document.getElementById('commentFormContainer').style.display = 'none';
         });
 
-        //Called the function to fetch posts
         fetchTasks();
     });
 </script>
