@@ -146,6 +146,7 @@
         document.getElementById('content').value = content;
         currentPostId = id;
         editMode = true;
+        document.getElementById('submitBtn').textContent = 'Update Post';
         document.getElementById('formContainer').style.display = 'block';
     };
 
@@ -170,6 +171,17 @@
         currentPostId = postId;
 
     };
+
+    const resetForm = () => {
+        document.getElementById('submitBtn').textContent = 'Add Post';
+        editMode = false;
+        currentPostId = null;
+    };
+
+    // Attach resetForm function to the reset button
+    const postForm = document.getElementById('postForm');
+    postForm.addEventListener('reset', resetForm);
+
 
     //Code to save the comment into the database
     const saveComment = (event) => {
