@@ -29,11 +29,11 @@
         <form id="postForm">
             <div class="form-group">
                 <label for="title">Post Title</label>
-                <input type="text" id="title" class="form-control" required>
+                <input type="text" id="title" class="form-control">
             </div>
             <div class="form-group">
                 <label for="content">Post Content</label>
-                <textarea id="content" class="form-control" required></textarea>
+                <textarea id="content" class="form-control"></textarea>
             </div>
             <button type="submit" id="submitBtn" class="btn btn-primary">Add Post</button>
             <button type="reset" id="cancelBtn" class="btn btn-secondary">Reset</button>
@@ -109,11 +109,20 @@
     };
 
 
-    //Code for save the input into the database
+    //Function to insert the data
     const savePost = (event) => {
         event.preventDefault();
-        const title = document.getElementById('title').value;
-        const content = document.getElementById('content').value;
+        const titleInput = document.getElementById('title');
+        const contentInput = document.getElementById('content');
+        const title = titleInput.value;
+        const content = contentInput.value;
+
+
+        if (!title.trim()) {
+            showMessage('Post Title is required', 'danger');
+            return;
+        }
+
         const slug = generateSlug(title);
 
         const postData = { title, slug, content };
@@ -123,16 +132,27 @@
                 .then(response => {
                     showMessage('Post updated successfully');
                     fetchPosts();
+                    titleInput.value = '';
+                    contentInput.value = '';
+                    document.getElementById('submitBtn').textContent = 'Add Post';
                 })
+                .catch(error => {
+                    showMessage('Failed to update post', 'danger');
+                    console.error('Error updating post:', error);
+                });
         } else {
             axios.post(apiBaseUrl, postData)
                 .then(response => {
                     showMessage('Post created successfully');
                     fetchPosts();
+                    titleInput.value = '';
+                    contentInput.value = '';
                 })
 
         }
     };
+
+
 
     //Code to delete the post and refresh the page
     window.deletePost = (id) => {
