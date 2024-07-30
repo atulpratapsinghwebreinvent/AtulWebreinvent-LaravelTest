@@ -27,14 +27,14 @@
     <div id="formContainer" class="form-container mb-3">
         <form id="postForm">
             <div class="form-group">
-                <label for="title">Post Title</label>
+                <label for="title">Task Title</label>
                 <input type="text" id="title" class="form-control" required>
             </div>
             <div class="form-group">
-                <label for="content">Post Content</label>
+                <label for="content">Task Description</label>
                 <textarea id="content" class="form-control" required></textarea>
             </div>
-            <button type="submit" id="submitBtn" class="btn btn-primary">Add Post</button>
+            <button type="submit" id="submitBtn" class="btn btn-primary">Add Task</button>
             <button type="reset" id="cancelBtn" class="btn btn-secondary">Reset</button>
         </form>
     </div>
@@ -60,7 +60,7 @@
 
 <script>
     //create constant for link to avoid url error
-    const apiBaseUrl = '/api/posts';
+    const apiBaseUrl = '/api/tasks';
     let editMode = false;
     let currentPostId = null;
 
@@ -90,10 +90,10 @@
                     const postItem = document.createElement('li');
                     postItem.className = 'list-group-item';
                     const escapedTitle = post.title;
-                    const escapedContent = post.content;
+                    const escapedContent = post.description;
                     postItem.innerHTML = `
                         <h5>${post.title}</h5>
-                        <p>${post.content}</p>
+                        <p>${post.description}</p>
                         <small>Comments: ${post.comments_count}</small>
                         <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${escapedTitle}', '${escapedContent}')">Edit</button>
                         <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
@@ -107,21 +107,21 @@
     const savePost = (event) => {
         event.preventDefault();
         const title = document.getElementById('title').value;
-        const content = document.getElementById('content').value;
+        const description = document.getElementById('content').value;
         const slug = generateSlug(title);
 
-        const postData = { title, slug, content };
+        const postData = { title, slug, description };
 
         if (editMode && currentPostId != null) {
             axios.put(`${apiBaseUrl}/${currentPostId}`, postData)
                 .then(response => {
-                    showMessage('Post updated successfully');
+                    showMessage('Task updated successfully');
                     fetchPosts();
                 })
         } else {
             axios.post(apiBaseUrl, postData)
                 .then(response => {
-                    showMessage('Post created successfully');
+                    showMessage('Task created successfully');
                     fetchPosts();
                 })
 
@@ -130,10 +130,10 @@
 
     //Code to delete the post and refresh the page
     window.deletePost = (id) => {
-        if (confirm('Are you sure you want to delete this post?')) {
+        if (confirm('Are you sure you want to delete this Task?')) {
             axios.delete(`${apiBaseUrl}/${id}`)
                 .then(response => {
-                    showMessage('Post deleted successfully', 'danger');
+                    showMessage('Task deleted successfully', 'danger');
                     fetchPosts();
                 })
 
@@ -141,9 +141,9 @@
     };
 
     //Code to edit the post and refresh the page
-    window.editPost = (id, title, content) => {
+    window.editPost = (id, title, description) => {
         document.getElementById('title').value = title;
-        document.getElementById('content').value = content;
+        document.getElementById('content').value = description;
         currentPostId = id;
         editMode = true;
         document.getElementById('formContainer').style.display = 'block';

@@ -27,9 +27,19 @@ class TaskController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, Task $task)
     {
         //
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255',
+            'description' => 'required|string|max:255'
+
+        ]);
+
+        $task = Task::create($request->all());
+
+        return response()->json($task, 205);
     }
 
     /**
@@ -51,16 +61,29 @@ class TaskController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Task $task)
     {
         //
+        $request->validate([
+           'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255',
+            'description' => 'required|string|max:255'
+
+        ]);
+
+        $task->update($request->all());
+
+        return response()->json($task, 205);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Task $task)
     {
         //
+        $task->delete();
+
+        return response()->json($task, 205);
     }
 }
