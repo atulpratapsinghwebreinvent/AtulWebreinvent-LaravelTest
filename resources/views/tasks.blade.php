@@ -53,9 +53,7 @@
             <button type="submit" id="commentSubmitBtn" class="btn btn-primary">Add Comment</button>
             <button type="reset" id="commentCancelBtn" class="btn btn-secondary">Reset</button>
         </form>
-        <div id="commentList" class="comment-list">
 
-        </div>
     </div>
 </div>
 
@@ -152,7 +150,7 @@
     };
 
     //Code to display comments option in the page
-    window.viewComments = (postId) => {
+    window.addComments = (postId) => {
         currentPostId = postId;
         document.getElementById('commentFormContainer').style.display = 'block';
 
