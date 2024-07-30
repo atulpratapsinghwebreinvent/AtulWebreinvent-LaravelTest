@@ -22,6 +22,7 @@
 <body>
 <div class="container text-center mt-4">
     <h1>Atul Pratap Singh | Webreinvent Laravel Test</h1>
+    <h2 class="text-primary">Post Management Page</h2>
     <div id="message" class="alert alert-success d-none"></div>
 
     <div id="formContainer" class="form-container mb-3">

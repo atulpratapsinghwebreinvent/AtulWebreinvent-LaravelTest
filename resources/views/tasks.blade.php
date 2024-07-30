@@ -22,6 +22,7 @@
 <body>
 <div class="container text-center mt-4">
     <h1>Atul Pratap Singh | Webreinvent Laravel Test</h1>
+    <h2 class="text-danger">Task Management Page</h2>
     <div id="message" class="alert alert-success d-none"></div>
 
     <div id="formContainer" class="form-container mb-3">
@@ -81,7 +82,7 @@
     };
 
     //Code to fetch the all post from the database
-    const fetchPosts = () => {
+    const fetchTasks = () => {
         axios.get(apiBaseUrl)
             .then(response => {
                 const postList = document.getElementById('postList');
@@ -116,13 +117,13 @@
             axios.put(`${apiBaseUrl}/${currentPostId}`, postData)
                 .then(response => {
                     showMessage('Task updated successfully');
-                    fetchPosts();
+                    fetchTasks();
                 })
         } else {
             axios.post(apiBaseUrl, postData)
                 .then(response => {
                     showMessage('Task created successfully');
-                    fetchPosts();
+                    fetchTasks();
                 })
 
         }
@@ -134,7 +135,7 @@
             axios.delete(`${apiBaseUrl}/${id}`)
                 .then(response => {
                     showMessage('Task deleted successfully', 'danger');
-                    fetchPosts();
+                    fetchTasks();
                 })
 
         }
@@ -194,7 +195,7 @@
         });
 
         //Called the function to fetch posts
-        fetchPosts();
+        fetchTasks();
     });
 </script>
 </body>
