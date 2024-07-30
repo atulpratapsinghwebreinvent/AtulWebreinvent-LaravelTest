@@ -136,10 +136,7 @@
                     contentInput.value = '';
                     document.getElementById('submitBtn').textContent = 'Add Post';
                 })
-                .catch(error => {
-                    showMessage('Failed to update post', 'danger');
-                    console.error('Error updating post:', error);
-                });
+
         } else {
             axios.post(apiBaseUrl, postData)
                 .then(response => {
