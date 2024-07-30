@@ -31,6 +31,7 @@
 
     <div id="formContainer" class="form-container mb-3">
         <form id="postForm">
+            @csrf
             <div class="form-group">
                 <label for="title">Post Title</label>
                 <input type="text" id="title" class="form-control">
