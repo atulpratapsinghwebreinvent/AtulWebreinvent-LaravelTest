@@ -165,7 +165,7 @@
             })
 
     };
-    window.viewComments = (postId) => {
+    const viewComments = (postId) => {
         window.open(`${apiBaseUrl}/${postId}/comments`,'_blank');
         currentPostId = postId;
 

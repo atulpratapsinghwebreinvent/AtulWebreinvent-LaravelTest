@@ -165,7 +165,11 @@
             })
 
     };
+    const viewComments = (postId) => {
+        window.open(`${apiBaseUrl}/${postId}/comments`,'_blank');
+        currentPostId = postId;
 
+    };
     //Code to save the comment into the database
     const saveComment = (event) => {
         event.preventDefault();
@@ -174,16 +178,12 @@
         axios.post(`${apiBaseUrl}/${currentPostId}/comments`, { content })
             .then(response => {
                 showMessage('Comment added successfully');
-                viewComments(currentPostId);
+
                 document.getElementById('commentContent').value = '';
             })
 
     };
-    window.viewComments = (postId) => {
-        window.open(`${apiBaseUrl}/${postId}/comments`,'_blank');
-        currentPostId = postId;
 
-    };
 
     //Code for take the event performed in the Form
     document.addEventListener('DOMContentLoaded', () => {
