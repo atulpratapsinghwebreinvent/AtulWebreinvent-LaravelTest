@@ -83,25 +83,31 @@
     const fetchPosts = () => {
         axios.get(apiBaseUrl)
             .then(response => {
+
+                const sortedPosts = response.data.sort((a, b) => b.id - a.id);
+
                 const postList = document.getElementById('postList');
                 postList.innerHTML = '';
-                response.data.forEach(post => {
+
+                sortedPosts.forEach(post => {
                     const postItem = document.createElement('li');
                     postItem.className = 'list-group-item';
                     const escapedTitle = post.title;
                     const escapedContent = post.content;
                     postItem.innerHTML = `
-                        <h5>${post.title}</h5>
-                        <p>${post.content}</p>
-                        <small>Comments: ${post.comments_count}</small>
-                        <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${escapedTitle}', '${escapedContent}')">Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
-                        <button class="btn btn-info btn-sm" onclick="addComments(${post.id})">Add Comments</button>
-                        <button class="btn btn-primary btn-sm" onclick="viewComments(${post.id})">View Comments</button>`;
+                    <h5>${post.title}</h5>
+                    <p>${post.content}</p>
+                    <small>Comments: ${post.comments_count}</small>
+                    <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${escapedTitle}', '${escapedContent}')">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
+                    <button class="btn btn-info btn-sm" onclick="addComments(${post.id})">Add Comments</button>
+                    <button class="btn btn-primary btn-sm" onclick="viewComments(${post.id})">View Comments</button>`;
                     postList.appendChild(postItem);
                 });
             })
+
     };
+
 
     //Code for save the input into the database
     const savePost = (event) => {
@@ -178,7 +184,7 @@
         currentPostId = null;
     };
 
-    // Attach resetForm function to the reset button
+
     const postForm = document.getElementById('postForm');
     postForm.addEventListener('reset', resetForm);
 
