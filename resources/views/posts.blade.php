@@ -27,10 +27,10 @@
     <h2 class="text-primary">Post Management Page</h2>
     <div id="message" class="alert alert-success d-none"></div>
 
-    <!-- Button to Open Post Form Modal -->
+
     <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#postFormModal" onclick="openPostModal()">Create New Post</button>
 
-    <!-- Post List Table -->
+
     <div class="container">
         <h2>Post List</h2>
         <table class="table table-bordered">
@@ -38,17 +38,17 @@
             <tr>
                 <th>Title</th>
                 <th>Content</th>
-                <th>Comments</th>
+                <th>Comments Count</th>
                 <th>Actions</th>
             </tr>
             </thead>
             <tbody id="postList">
-            <!-- Post items will be dynamically added here -->
+
             </tbody>
         </table>
     </div>
 
-    <!-- Comment List Table -->
+
     <div class="container">
         <h2>Post Comments</h2>
         <table class="table table-bordered">
@@ -58,13 +58,13 @@
             </tr>
             </thead>
             <tbody id="commentList">
-            <!-- Comment items will be dynamically added here -->
+
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- Post Form Modal -->
+
 <div class="modal fade" id="postFormModal" tabindex="-1" role="dialog" aria-labelledby="postFormModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -93,7 +93,7 @@
     </div>
 </div>
 
-<!-- Comment Form Modal -->
+
 <div class="modal fade" id="commentFormModal" tabindex="-1" role="dialog" aria-labelledby="commentFormModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -107,7 +107,7 @@
                 <form id="commentForm">
                     <div class="form-group">
                         <label for="commentContent">Comment</label>
-                        <textarea id="commentContent" class="form-control" required></textarea>
+                        <textarea id="commentContent" class="form-control"></textarea>
                     </div>
                     <button type="submit" id="commentSubmitBtn" class="btn btn-primary">Add Comment</button>
                 </form>
@@ -246,6 +246,10 @@
         const content = document.getElementById('commentContent').value;
         const postId = currentPostId;
 
+        if (!content.trim()) {
+            showMessage('Comment is required', 'danger');
+            return;
+        }
         axios.post(`${apiBaseUrl}/${postId}/comments`, { content })
             .then(response => {
                 showMessage('Comment added successfully');
