@@ -29,6 +29,7 @@
 
 
     <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#postFormModal" onclick="openPostModal()">Create New Post</button>
+    <a href="{{ url('/') }}" class="btn btn-success btn-custom mb-3">Home Page</a>
 
 
     <div class="container">
