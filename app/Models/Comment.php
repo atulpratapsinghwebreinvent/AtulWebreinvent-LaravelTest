@@ -16,7 +16,7 @@ class Comment extends Model
 
     public function task()
     {
-        //Test the Gitkraken
+
         return $this->belongsTo(Task::class);
     }
 }
