@@ -186,7 +186,7 @@
                 .then(response => {
                     showMessage('Task created successfully');
                     fetchTasks();
-                   
+
                     $('#taskModal').modal('hide');
                 });
         }
@@ -213,7 +213,7 @@
 
     const showCommentForm = (postId) => {
         currentPostId = postId;
-        $('#commentModal').modal('show'); // Show the comment modal
+        $('#commentModal').modal('show');
     };
 
     const viewComments = (postId) => {
@@ -223,13 +223,21 @@
             .then(response => {
                 const commentList = document.getElementById('commentList');
                 commentList.innerHTML = '';
-                response.data.forEach(comment => {
-                    const commentRow = document.createElement('tr');
-                    commentRow.innerHTML = `<td>${comment.content}</td>`;
-                    commentList.appendChild(commentRow);
-                });
+
+                if (response.data.length === 0) {
+                    const noCommentsRow = document.createElement('tr');
+                    noCommentsRow.innerHTML = '<td colspan="1">No comments found</td>';
+                    commentList.appendChild(noCommentsRow);
+                } else {
+                    response.data.forEach(comment => {
+                        const commentRow = document.createElement('tr');
+                        commentRow.innerHTML = `<td>${comment.content}</td>`;
+                        commentList.appendChild(commentRow);
+                    });
+                }
             });
     };
+
 
     const saveComment = (event) => {
         event.preventDefault();
