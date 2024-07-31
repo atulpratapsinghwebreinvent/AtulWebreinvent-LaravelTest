@@ -8,15 +8,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <style>
         .form-container {
-            max-width: 600px; /* Adjust the maximum width of the form container */
-            margin: auto; /* Center align the form container */
-            padding: 20px; /* Add padding inside the form container */
-            border: 1px solid #ccc; /* Optional: Add a border */
-            border-radius: 8px; /* Optional: Add border radius */
-        }
-        .comment-form-container {
-            display: none;
-            margin-top: 20px;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
         }
         .comment-list {
             margin-top: 20px;
@@ -28,62 +24,101 @@
     <h1>Atul Pratap Singh | Webreinvent Laravel Test</h1>
     <h2 class="text-danger">Task Management Page</h2>
     <div id="message" class="alert alert-success d-none"></div>
-
-    <div id="formContainer" class="form-container mb-3">
-        <form id="postForm">
-            @csrf
-            <div class="form-group">
-                <label for="title">Task Title</label>
-                <input type="text" id="title" class="form-control">
-            </div>
-            <div class="form-group">
-                <label for="content">Task Description</label>
-                <textarea id="content" class="form-control"></textarea>
-            </div>
-            <button type="submit" id="submitBtn" class="btn btn-primary">Add Task</button>
-            <button type="reset" id="cancelBtn" class="btn btn-secondary">Reset</button>
-        </form>
-    </div>
+    <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#taskModal" onclick="openPostModal()">Create New Task</button>
 
     <div class="container">
         <div class="row">
-            <div class="col-md-6">
-                <h2>Task Comments</h2>
-                <div id="commentList" class="comment-list">
-
-                </div>
-            </div>
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <h2>Task List</h2>
-                <ul id="postList" class="list-group">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Comments</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="postList">
+                    <!-- Task rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="container">
+                <h2>Task Comments</h2>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>Comment</th>
+                    </tr>
+                    </thead>
+                    <tbody id="commentList">
 
-                </ul>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Task Form -->
+<div class="modal fade" id="taskModal" tabindex="-1" role="dialog" aria-labelledby="taskModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskModalLabel">Task Form</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="postForm">
+                    <div class="form-group">
+                        <label for="title">Task Title</label>
+                        <input type="text" id="title" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="content">Task Description</label>
+                        <textarea id="content" class="form-control" required></textarea>
+                    </div>
+                    <button type="submit" id="submitBtn" class="btn btn-primary">Add Task</button>
+                    <button type="reset" id="cancelBtn" class="btn btn-secondary">Reset</button>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <div id="commentFormContainer" class="comment-form-container">
-        <h3 id="commentFormTitle">Add Comment</h3>
-        <form id="commentForm">
-            <div class="form-group">
-                <label for="commentContent">Comment</label>
-                <textarea id="commentContent" class="form-control" required></textarea>
+<!-- Modal for Comment Form -->
+<div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="commentModalLabel">Add Comment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-            <button type="submit" id="commentSubmitBtn" class="btn btn-primary">Add Comment</button>
-            <button type="reset" id="commentCancelBtn" class="btn btn-secondary">Reset</button>
-        </form>
-
+            <div class="modal-body">
+                <form id="commentForm">
+                    <div class="form-group">
+                        <label for="commentContent">Comment</label>
+                        <textarea id="commentContent" class="form-control" required></textarea>
+                    </div>
+                    <button type="submit" id="commentSubmitBtn" class="btn btn-primary">Add Comment</button>
+                    <button type="reset" id="commentCancelBtn" class="btn btn-secondary">Reset</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-
-    //create constant for link to avoid url error
     const apiBaseUrl = '/api/tasks';
     let editMode = false;
     let currentPostId = null;
 
-    //Code for display the message according operation
     const showMessage = (message, type = 'success') => {
         const messageElement = document.getElementById('message');
         messageElement.textContent = message;
@@ -94,12 +129,10 @@
         }, 3000);
     };
 
-    //Code for generate slug random with the help of title input
     const generateSlug = (title) => {
         return title.toLowerCase();
     };
 
-    //Code to fetch the all post from the database
     const fetchTasks = () => {
         axios.get(apiBaseUrl)
             .then(response => {
@@ -108,38 +141,37 @@
                 postList.innerHTML = '';
 
                 sortedPosts.forEach(post => {
-                    const postItem = document.createElement('li');
-                    postItem.className = 'list-group-item';
+                    const postItem = document.createElement('tr');
                     const escapedTitle = post.title;
                     const escapedContent = post.description;
-                    postItem.id = `post-${post.id}`; // Add an ID to the list item for easy access
-                    postItem.innerHTML = `
-                    <h5>${post.title}</h5>
-                    <p>${post.description}</p>
-                    <small>Comments: <span id="comments-count-${post.id}">${post.comments_count}</span></small>
-                    <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${escapedTitle}', '${escapedContent}')">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
-                    <button class="btn btn-info btn-sm" onclick="addComments(${post.id})">Add Comments</button>
-                    <button class="btn btn-primary btn-sm" onclick="viewComments(${post.id})">View Comments</button>`;
+                    postItem.id = `post-${post.id}`;
+                    postItem.innerHTML =
+                        `<td>${post.title}</td>
+                         <td>${post.description}</td>
+                         <td><span id="comments-count-${post.id}">${post.comments_count}</span></td>
+                         <td>
+                            <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${escapedTitle}', '${escapedContent}')">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
+                            <button class="btn btn-info btn-sm" onclick="showCommentForm(${post.id})">Add Comment</button>
+                            <button class="btn btn-primary btn-sm" onclick="viewComments(${post.id})">View Comments</button>
+                         </td>`;
                     postList.appendChild(postItem);
                 });
             });
     };
 
-
-    //Code for save the input into the database
     const savePost = (event) => {
         event.preventDefault();
         const titleInput = document.getElementById('title');
         const contentInput = document.getElementById('content');
         const title = titleInput.value;
         const description = contentInput.value;
+
         if (!title.trim()) {
             showMessage('Task Title is required', 'danger');
             return;
         }
         const slug = generateSlug(title);
-
         const postData = { title, slug, description };
 
         if (editMode && currentPostId != null) {
@@ -150,7 +182,8 @@
                     contentInput.value = '';
                     document.getElementById('submitBtn').textContent = 'Add Task';
                     fetchTasks();
-                })
+                    $('#taskModal').modal('hide'); // Hide the modal
+                });
         } else {
             axios.post(apiBaseUrl, postData)
                 .then(response => {
@@ -158,99 +191,62 @@
                     fetchTasks();
                     titleInput.value = '';
                     contentInput.value = '';
-                })
-
+                    $('#taskModal').modal('hide'); // Hide the modal
+                });
         }
     };
 
-    //Code to delete the post and refresh the page
     window.deletePost = (id) => {
         if (confirm('Are you sure you want to delete this Task?')) {
             axios.delete(`${apiBaseUrl}/${id}`)
                 .then(response => {
                     showMessage('Task deleted successfully', 'danger');
                     fetchTasks();
-                })
-
+                });
         }
     };
 
-    //Code to edit the post and refresh the page
     window.editPost = (id, title, description) => {
         document.getElementById('title').value = title;
         document.getElementById('content').value = description;
         currentPostId = id;
         editMode = true;
         document.getElementById('submitBtn').textContent = 'Update Task';
-        document.getElementById('formContainer').style.display = 'block';
+        $('#taskModal').modal('show'); // Show the modal
     };
 
-    //Code to display comments option in the page
-    window.addComments = (postId) => {
+    const showCommentForm = (postId) => {
         currentPostId = postId;
-        document.getElementById('commentFormContainer').style.display = 'block';
+        $('#commentModal').modal('show'); // Show the comment modal
+    };
 
+    const viewComments = (postId) => {
+        currentPostId = postId;
+        $('#commentFormModal').modal('hide');
         axios.get(`${apiBaseUrl}/${postId}/comments`)
             .then(response => {
                 const commentList = document.getElementById('commentList');
                 commentList.innerHTML = '';
                 response.data.forEach(comment => {
-                    const commentItem = document.createElement('div');
-                    commentList.appendChild(commentItem);
+                    const commentRow = document.createElement('tr');
+                    commentRow.innerHTML = `<td>${comment.content}</td>`;
+                    commentList.appendChild(commentRow);
                 });
-            })
-
-    };
-    const viewComments = (taskId) => {
-        const commentList = document.getElementById('commentList');
-
-        axios.get(`${apiBaseUrl}/${taskId}`)
-            .then(postResponse => {
-                const TaskTitle = postResponse.data.title;
-                axios.get(`${apiBaseUrl}/${taskId}/comments`)
-                    .then(commentsResponse => {
-
-                        const comments = commentsResponse.data;
-                        commentList.innerHTML = '';
-
-                        const postTitleElement = document.createElement('h3');
-                        postTitleElement.textContent = `Title: ${TaskTitle}`;
-                        commentList.appendChild(postTitleElement);
-
-
-                        if (comments.length === 0) {
-                            const noCommentsElement = document.createElement('p');
-                            noCommentsElement.textContent = 'No comments found.';
-                            commentList.appendChild(noCommentsElement);
-                        } else {
-                            comments.forEach(comment => {
-                                const commentItem = document.createElement('div');
-                                commentItem.className = 'comment-item';
-                                commentItem.innerHTML = `
-                                Comment:<p>${comment.content}</p>
-                            `;
-                                commentList.appendChild(commentItem);
-                            });
-                        }
-                    })
-            })
-
+            });
     };
 
-    //Code to save the comment into the database
     const saveComment = (event) => {
         event.preventDefault();
         const content = document.getElementById('commentContent').value;
-        const postId = currentPostId; // Assuming you have the current post ID in a variable or context
+        const postId = currentPostId;
 
         axios.post(`${apiBaseUrl}/${postId}/comments`, { content })
             .then(response => {
                 showMessage('Comment added successfully');
 
                 document.getElementById('commentContent').value = '';
-                document.getElementById('commentFormContainer').style.display = 'none'; // Hide comment form
+                $('#commentModal').modal('hide'); // Hide the comment modal
 
-                // Update the comment count dynamically
                 const commentsCountElement = document.getElementById(`comments-count-${postId}`);
                 if (commentsCountElement) {
                     const currentCount = parseInt(commentsCountElement.innerText, 10);
@@ -259,32 +255,22 @@
             });
     };
 
-
     const resetForm = () => {
         document.getElementById('submitBtn').textContent = 'Add Task';
         editMode = false;
         currentPostId = null;
-
     };
 
-    const postForm = document.getElementById('postForm');
-    postForm.addEventListener('reset', resetForm);
-
-    //Code for take the event performed in the Form
     document.addEventListener('DOMContentLoaded', () => {
         const postForm = document.getElementById('postForm');
-        const cancelBtn = document.getElementById('cancelBtn');
         const commentForm = document.getElementById('commentForm');
-        const commentCancelBtn = document.getElementById('commentCancelBtn');
 
         postForm.addEventListener('submit', savePost);
         commentForm.addEventListener('submit', saveComment);
-        commentCancelBtn.addEventListener('click', () => {
-            document.getElementById('commentFormContainer').style.display = 'none';
-        });
-
         fetchTasks();
     });
 </script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
