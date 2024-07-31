@@ -198,15 +198,15 @@
             })
 
     };
-    const viewComments = (postId) => {
+    const viewComments = (taskId) => {
         const commentList = document.getElementById('commentList');
 
-        axios.get(`${apiBaseUrl}/${postId}`)
+        axios.get(`${apiBaseUrl}/${taskId}`)
             .then(postResponse => {
                 const TaskTitle = postResponse.data.title;
-                console.log(TaskTitle);
-                axios.get(`${apiBaseUrl}/${postId}/comments`)
+                axios.get(`${apiBaseUrl}/${taskId}/comments`)
                     .then(commentsResponse => {
+
                         const comments = commentsResponse.data;
                         commentList.innerHTML = '';
 
