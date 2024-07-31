@@ -103,7 +103,7 @@
                 <form id="commentForm">
                     <div class="form-group">
                         <label for="commentContent">Comment</label>
-                        <textarea id="commentContent" class="form-control" required></textarea>
+                        <textarea id="commentContent" class="form-control"></textarea>
                     </div>
                     <button type="submit" id="commentSubmitBtn" class="btn btn-primary">Add Comment</button>
                     <button type="reset" id="commentCancelBtn" class="btn btn-secondary">Reset</button>
@@ -243,6 +243,10 @@
         event.preventDefault();
         const content = document.getElementById('commentContent').value;
         const postId = currentPostId;
+        if (!content.trim()) {
+            showMessage('Task Title is required', 'danger');
+            return;
+        }
 
         axios.post(`${apiBaseUrl}/${postId}/comments`, { content })
             .then(response => {
