@@ -24,7 +24,7 @@
     <h1>Atul Pratap Singh | Webreinvent Laravel Test</h1>
     <h2 class="text-danger">Task Management Page</h2>
     <div id="message" class="alert alert-success d-none"></div>
-    <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#taskModal" onclick="openPostModal()">Create New Task</button>
+    <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#taskModal" onclick="openTaskModal()">Create New Task</button>
 
     <div class="container">
         <div class="row">
@@ -57,7 +57,6 @@
                     </tbody>
                 </table>
             </div>
-        </div>
         </div>
     </div>
 </div>
@@ -178,9 +177,7 @@
             axios.put(`${apiBaseUrl}/${currentPostId}`, postData)
                 .then(response => {
                     showMessage('Task updated successfully');
-                    titleInput.value = '';
-                    contentInput.value = '';
-                    document.getElementById('submitBtn').textContent = 'Add Task';
+                    resetForm();
                     fetchTasks();
                     $('#taskModal').modal('hide'); // Hide the modal
                 });
@@ -189,8 +186,7 @@
                 .then(response => {
                     showMessage('Task created successfully');
                     fetchTasks();
-                    titleInput.value = '';
-                    contentInput.value = '';
+                    resetForm();
                     $('#taskModal').modal('hide'); // Hide the modal
                 });
         }
@@ -222,7 +218,7 @@
 
     const viewComments = (postId) => {
         currentPostId = postId;
-        $('#commentFormModal').modal('hide');
+        $('#commentModal').modal('hide');
         axios.get(`${apiBaseUrl}/${postId}/comments`)
             .then(response => {
                 const commentList = document.getElementById('commentList');
@@ -243,7 +239,6 @@
         axios.post(`${apiBaseUrl}/${postId}/comments`, { content })
             .then(response => {
                 showMessage('Comment added successfully');
-
                 document.getElementById('commentContent').value = '';
                 $('#commentModal').modal('hide'); // Hide the comment modal
 
@@ -255,12 +250,13 @@
             });
     };
 
-    const resetForm = () => {
-        document.getElementById('submitBtn').textContent = 'Add Task';
+    function openTaskModal() {
+        document.getElementById('title').value = '';
+        document.getElementById('content').value = '';
+        document.getElementById('submitBtn').textContent = 'Add Post';
         editMode = false;
         currentPostId = null;
-    };
-
+    }
     document.addEventListener('DOMContentLoaded', () => {
         const postForm = document.getElementById('postForm');
         const commentForm = document.getElementById('commentForm');
