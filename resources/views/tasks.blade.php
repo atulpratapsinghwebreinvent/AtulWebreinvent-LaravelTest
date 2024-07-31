@@ -179,15 +179,15 @@
                     showMessage('Task updated successfully');
                     resetForm();
                     fetchTasks();
-                    $('#taskModal').modal('hide'); // Hide the modal
+                    $('#taskModal').modal('hide');
                 });
         } else {
             axios.post(apiBaseUrl, postData)
                 .then(response => {
                     showMessage('Task created successfully');
                     fetchTasks();
-                    resetForm();
-                    $('#taskModal').modal('hide'); // Hide the modal
+                   
+                    $('#taskModal').modal('hide');
                 });
         }
     };
