@@ -104,7 +104,6 @@
     const fetchPosts = () => {
         axios.get(apiBaseUrl)
             .then(response => {
-
                 const sortedPosts = response.data.sort((a, b) => b.id - a.id);
 
                 const postList = document.getElementById('postList');
@@ -115,18 +114,18 @@
                     postItem.className = 'list-group-item';
                     const escapedTitle = post.title;
                     const escapedContent = post.content;
+                    postItem.id = `post-${post.id}`;
                     postItem.innerHTML = `
                     <h5>${post.title}</h5>
                     <p>${post.content}</p>
-                    <small>Comments: ${post.comments_count}</small>
+                    <small>Comments: <span id="comments-count-${post.id}">${post.comments_count}</span></small>
                     <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${escapedTitle}', '${escapedContent}')">Edit</button>
                     <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
                     <button class="btn btn-info btn-sm" onclick="addComments(${post.id})">Add Comments</button>
                     <button class="btn btn-primary btn-sm" onclick="viewComments(${post.id})">View Comments</button>`;
                     postList.appendChild(postItem);
                 });
-            })
-
+            });
     };
 
 
@@ -267,15 +266,23 @@
     const saveComment = (event) => {
         event.preventDefault();
         const content = document.getElementById('commentContent').value;
+        const postId = currentPostId;
 
-        axios.post(`${apiBaseUrl}/${currentPostId}/comments`, { content })
+        axios.post(`${apiBaseUrl}/${postId}/comments`, { content })
             .then(response => {
                 showMessage('Comment added successfully');
                 document.getElementById('commentContent').value = '';
-                document.getElementById('commentFormContainer').style.display = 'none'; // Hide comment form
-            })
+                document.getElementById('commentFormContainer').style.display = 'none';
 
+                // Update the comment count dynamically
+                const commentsCountElement = document.getElementById(`comments-count-${postId}`);
+                if (commentsCountElement) {
+                    const currentCount = parseInt(commentsCountElement.innerText, 10);
+                    commentsCountElement.innerText = currentCount + 1;
+                }
+            });
     };
+
 
 
 
