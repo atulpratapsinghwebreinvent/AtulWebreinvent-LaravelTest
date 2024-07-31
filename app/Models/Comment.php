@@ -2,22 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
 {
-    protected $fillable = ['content', 'post_id','task_id'];
+    // Add the fillable attributes
+    protected $fillable = ['content', 'commentable_id', 'commentable_type'];
 
-    public function post()
+    // Define the inverse relationship
+    public function commentable()
     {
-        return $this->belongsTo(Post::class);
-    }
-
-    public function task()
-    {
-
-        return $this->belongsTo(Task::class);
+        return $this->morphTo();
     }
 }
-

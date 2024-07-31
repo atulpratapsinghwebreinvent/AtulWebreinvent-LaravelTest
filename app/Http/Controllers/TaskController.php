@@ -28,20 +28,34 @@ class TaskController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, Task $task)
+    public function store(Request $request)
     {
-        //
+        // Validate the request
         $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255',
-            'description' => 'required|string|max:255'
-
+            'description' => 'required|string',
+            'comments' => 'array',
+            'comments.*.content' => 'required|string',
         ]);
 
-        $task = Task::create($request->all());
 
-        return response()->json($task, 205);
+        $task = Task::create($request->only(['title', 'slug', 'description']));
+
+
+        if ($request->has('comments')) {
+            foreach ($request->input('comments') as $commentData) {
+                $task->comments()->create([
+                    'content' => $commentData['content'],
+                    'commentable_type' => Task::class,
+                    'commentable_id' => $task->id
+                ]);
+            }
+        }
+
+        return response()->json($task, 201);
     }
+
 
     /**
      * Display the specified resource.

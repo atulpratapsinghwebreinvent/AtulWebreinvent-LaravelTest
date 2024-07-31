@@ -25,39 +25,36 @@
     <h2 class="text-danger">Task Management Page</h2>
     <div id="message" class="alert alert-success d-none"></div>
     <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#taskModal" onclick="openTaskModal()">Create New Task</button>
+    <a href="{{ url('/') }}" class="btn btn-success btn-custom mb-3">Home Page</a>
+    <div class="container">
+        <h2>Task List</h2>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Comments</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="postList">
+            <!-- Task rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
 
     <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <h2>Task List</h2>
-                <table class="table table-bordered">
-                    <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th>Comments</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody id="postList">
-                    <!-- Task rows will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
-            <div class="container">
-                <h2>Task Comments</h2>
-                <table class="table table-bordered">
-                    <thead>
-                    <tr>
-                        <th>Comment</th>
-                    </tr>
-                    </thead>
-                    <tbody id="commentList">
-
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <h2>Task Comments</h2>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>Comment</th>
+            </tr>
+            </thead>
+            <tbody id="commentList">
+            <!-- Comments rows will be inserted here -->
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -103,7 +100,7 @@
                 <form id="commentForm">
                     <div class="form-group">
                         <label for="commentContent">Comment</label>
-                        <textarea id="commentContent" class="form-control"></textarea>
+                        <textarea id="commentContent" class="form-control" required></textarea>
                     </div>
                     <button type="submit" id="commentSubmitBtn" class="btn btn-primary">Add Comment</button>
                     <button type="reset" id="commentCancelBtn" class="btn btn-secondary">Reset</button>
@@ -129,37 +126,35 @@
     };
 
     const generateSlug = (title) => {
-        return title.toLowerCase();
+        return title.toLowerCase().replace(/\s+/g, '-');
     };
 
     const fetchTasks = () => {
         axios.get(apiBaseUrl)
             .then(response => {
-                const sortedPosts = response.data.sort((a, b) => b.id - a.id);
+                const tasks = response.data.sort((a, b) => b.id - a.id);
                 const postList = document.getElementById('postList');
                 postList.innerHTML = '';
 
-                sortedPosts.forEach(post => {
-                    const postItem = document.createElement('tr');
-                    const escapedTitle = post.title;
-                    const escapedContent = post.description;
-                    postItem.id = `post-${post.id}`;
-                    postItem.innerHTML =
-                        `<td>${post.title}</td>
-                         <td>${post.description}</td>
-                         <td><span id="comments-count-${post.id}">${post.comments_count}</span></td>
+                tasks.forEach(task => {
+                    const taskRow = document.createElement('tr');
+                    taskRow.id = `task-${task.id}`;
+                    taskRow.innerHTML =
+                        `<td>${task.title}</td>
+                         <td>${task.description}</td>
+                         <td><span id="comments-count-${task.id}">${task.comments_count}</span></td>
                          <td>
-                            <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${escapedTitle}', '${escapedContent}')">Edit</button>
-                            <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
-                            <button class="btn btn-info btn-sm" onclick="showCommentForm(${post.id})">Add Comment</button>
-                            <button class="btn btn-primary btn-sm" onclick="viewComments(${post.id})">View Comments</button>
+                            <button class="btn btn-warning btn-sm" onclick="editTask(${task.id}, '${task.title}', '${task.description}')">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteTask(${task.id})">Delete</button>
+                            <button class="btn btn-info btn-sm" onclick="showCommentForm(${task.id})">Add Comment</button>
+<button class="btn btn-info btn-sm" onclick="viewComments(${task.id}, 'tasks')">View Comments</button>
                          </td>`;
-                    postList.appendChild(postItem);
+                    postList.appendChild(taskRow);
                 });
             });
     };
 
-    const savePost = (event) => {
+    const saveTask = (event) => {
         event.preventDefault();
         const titleInput = document.getElementById('title');
         const contentInput = document.getElementById('content');
@@ -171,10 +166,10 @@
             return;
         }
         const slug = generateSlug(title);
-        const postData = { title, slug, description };
+        const taskData = { title, slug, description };
 
         if (editMode && currentPostId != null) {
-            axios.put(`${apiBaseUrl}/${currentPostId}`, postData)
+            axios.put(`${apiBaseUrl}/${currentPostId}`, taskData)
                 .then(response => {
                     showMessage('Task updated successfully');
                     resetForm();
@@ -182,17 +177,16 @@
                     $('#taskModal').modal('hide');
                 });
         } else {
-            axios.post(apiBaseUrl, postData)
+            axios.post(apiBaseUrl, taskData)
                 .then(response => {
                     showMessage('Task created successfully');
                     fetchTasks();
-
                     $('#taskModal').modal('hide');
                 });
         }
     };
 
-    window.deletePost = (id) => {
+    const deleteTask = (id) => {
         if (confirm('Are you sure you want to delete this Task?')) {
             axios.delete(`${apiBaseUrl}/${id}`)
                 .then(response => {
@@ -202,24 +196,32 @@
         }
     };
 
-    window.editPost = (id, title, description) => {
+    const editTask = (id, title, description) => {
         document.getElementById('title').value = title;
         document.getElementById('content').value = description;
         currentPostId = id;
         editMode = true;
         document.getElementById('submitBtn').textContent = 'Update Task';
-        $('#taskModal').modal('show'); // Show the modal
+        $('#taskModal').modal('show');
     };
 
-    const showCommentForm = (postId) => {
-        currentPostId = postId;
+    const showCommentForm = (taskId) => {
+        currentPostId = taskId;
         $('#commentModal').modal('show');
     };
+    const viewComments = (entityId, entityType) => {
+        // Validate the entity type
+        const validTypes = ['tasks', 'posts'];
+        if (!validTypes.includes(entityType)) {
+            console.error('Invalid entity type');
+            showMessage('Invalid entity type', 'danger');
+            return;
+        }
 
-    const viewComments = (postId) => {
-        currentPostId = postId;
-        $('#commentModal').modal('hide');
-        axios.get(`${apiBaseUrl}/${postId}/comments`)
+        // Define the endpoint based on the entity type
+        const endpoint = `${apiBaseUrl}/${entityType}/${entityId}/comments`;
+
+        axios.get(endpoint)
             .then(response => {
                 const commentList = document.getElementById('commentList');
                 commentList.innerHTML = '';
@@ -235,45 +237,84 @@
                         commentList.appendChild(commentRow);
                     });
                 }
+            })
+            .catch(error => {
+                console.error('There was an error fetching the comments!', error);
+                showMessage('Failed to fetch comments', 'danger');
             });
     };
 
-
-    const saveComment = (event) => {
+    const saveComment = (event, entityId, entityType) => {
         event.preventDefault();
-        const content = document.getElementById('commentContent').value;
-        const postId = currentPostId;
-        if (!content.trim()) {
-            showMessage('Task Title is required', 'danger');
+
+        // Validate the entity type
+        const validTypes = ['tasks', 'posts'];
+        if (!validTypes.includes(entityType)) {
+            console.error('Invalid entity type');
+            showMessage('Invalid entity type', 'danger');
             return;
         }
 
-        axios.post(`${apiBaseUrl}/${postId}/comments`, { content })
+        const content = document.getElementById('commentContent').value;
+        if (!content.trim()) {
+            showMessage('Comment content is required', 'danger');
+            return;
+        }
+
+        // Define the endpoint based on the entity type
+        const endpoint = `${apiBaseUrl}/${entityType}/${entityId}/comments`;
+
+        axios.post(endpoint, { content })
             .then(response => {
                 showMessage('Comment added successfully');
                 document.getElementById('commentContent').value = '';
                 $('#commentModal').modal('hide'); // Hide the comment modal
 
-                const commentsCountElement = document.getElementById(`comments-count-${postId}`);
+                const commentsCountElement = document.getElementById(`comments-count-${entityId}`);
                 if (commentsCountElement) {
                     const currentCount = parseInt(commentsCountElement.innerText, 10);
                     commentsCountElement.innerText = currentCount + 1;
                 }
+            })
+            .catch(error => {
+                console.error('There was an error adding the comment!', error);
+                showMessage('Failed to add comment', 'danger');
             });
     };
 
-    function openTaskModal() {
+    // Adjust the event listeners for forms
+    document.addEventListener('DOMContentLoaded', () => {
+        const commentForm = document.getElementById('commentForm');
+        commentForm.addEventListener('submit', (event) => {
+            // Replace with actual entity ID and type
+            const entityId = currentPostId; // Replace with actual entity ID
+            const entityType = 'tasks'; // or 'posts', based on context
+            saveComment(event, entityId, entityType);
+        });
+    });
+
+
+
+
+
+
+    const resetForm = () => {
         document.getElementById('title').value = '';
         document.getElementById('content').value = '';
-        document.getElementById('submitBtn').textContent = 'Add Post';
+    };
+
+    function openTaskModal() {
+        resetForm();
+        document.getElementById('submitBtn').textContent = 'Add Task';
         editMode = false;
         currentPostId = null;
     }
+
     document.addEventListener('DOMContentLoaded', () => {
         const postForm = document.getElementById('postForm');
         const commentForm = document.getElementById('commentForm');
 
-        postForm.addEventListener('submit', savePost);
+        postForm.addEventListener('submit', saveTask);
         commentForm.addEventListener('submit', saveComment);
         fetchTasks();
     });

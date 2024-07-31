@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,10 +27,8 @@
     <h2 class="text-primary">Post Management Page</h2>
     <div id="message" class="alert alert-success d-none"></div>
 
-
     <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#postFormModal" onclick="openPostModal()">Create New Post</button>
-    <a href="{{ url('/') }}" class="btn btn-success btn-custom mb-3">Home Page</a>
-
+    <a href="{{ url('/') }}" class="btn btn-success mb-3">Home Page</a>
 
     <div class="container">
         <h2>Post List</h2>
@@ -44,11 +42,10 @@
             </tr>
             </thead>
             <tbody id="postList">
-
+            <!-- Posts will be dynamically added here -->
             </tbody>
         </table>
     </div>
-
 
     <div class="container">
         <h2>Post Comments</h2>
@@ -59,13 +56,13 @@
             </tr>
             </thead>
             <tbody id="commentList">
-
+            <!-- Comments will be dynamically added here -->
             </tbody>
         </table>
     </div>
 </div>
 
-
+<!-- Modal for Post Form -->
 <div class="modal fade" id="postFormModal" tabindex="-1" role="dialog" aria-labelledby="postFormModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -80,11 +77,11 @@
                     @csrf
                     <div class="form-group">
                         <label for="title">Post Title</label>
-                        <input type="text" id="title" class="form-control">
+                        <input type="text" id="title" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label for="content">Post Content</label>
-                        <textarea id="content" class="form-control" rows="5"></textarea>
+                        <textarea id="content" class="form-control" rows="5" required></textarea>
                     </div>
                     <button type="submit" id="submitBtn" class="btn btn-primary mr-2">Add Post</button>
                     <button type="reset" id="cancelBtn" class="btn btn-secondary">Reset</button>
@@ -94,7 +91,7 @@
     </div>
 </div>
 
-
+<!-- Modal for Comment Form -->
 <div class="modal fade" id="commentFormModal" tabindex="-1" role="dialog" aria-labelledby="commentFormModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -108,7 +105,7 @@
                 <form id="commentForm">
                     <div class="form-group">
                         <label for="commentContent">Comment</label>
-                        <textarea id="commentContent" class="form-control"></textarea>
+                        <textarea id="commentContent" class="form-control" required></textarea>
                     </div>
                     <button type="submit" id="commentSubmitBtn" class="btn btn-primary">Add Comment</button>
                 </form>
@@ -133,7 +130,7 @@
     };
 
     const generateSlug = (title) => {
-        return title.toLowerCase();
+        return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]/g, '');
     };
 
     const fetchPosts = () => {
@@ -146,17 +143,15 @@
 
                 sortedPosts.forEach(post => {
                     const postRow = document.createElement('tr');
-                    const escapedTitle = post.title;
-                    const escapedContent = post.content;
                     postRow.id = `post-${post.id}`;
                     postRow.innerHTML = `
                         <td>${post.title}</td>
                         <td>${post.content}</td>
                         <td><span id="comments-count-${post.id}">${post.comments_count}</span></td>
                         <td>
-                            <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${escapedTitle}', '${escapedContent}')">Edit</button>
+                            <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${post.title}', '${post.content}')">Edit</button>
                             <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
-                            <button class="btn btn-info btn-sm" onclick="addComments(${post.id})">Add Comments</button>
+                            <button class="btn btn-info btn-sm" onclick="showCommentForm(${post.id})">Add Comments</button>
                             <button class="btn btn-primary btn-sm" onclick="viewComments(${post.id})">View Comments</button>
                         </td>
                     `;
@@ -203,7 +198,7 @@
         currentPostId = null;
     };
 
-    window.deletePost = (id) => {
+    const deletePost = (id) => {
         if (confirm('Are you sure you want to delete this post?')) {
             axios.delete(`${apiBaseUrl}/${id}`)
                 .then(response => {
@@ -213,7 +208,7 @@
         }
     };
 
-    window.editPost = (id, title, content) => {
+    const editPost = (id, title, content) => {
         document.getElementById('title').value = title;
         document.getElementById('content').value = content;
         currentPostId = id;
@@ -222,23 +217,27 @@
         $('#postFormModal').modal('show');
     };
 
-    window.addComments = (postId) => {
+    const showCommentForm = (postId) => {
         currentPostId = postId;
         $('#commentFormModal').modal('show');
     };
 
     const viewComments = (postId) => {
         currentPostId = postId;
-        $('#commentFormModal').modal('hide'); // Hide the comment form modal
+        $('#commentFormModal').modal('hide');
         axios.get(`${apiBaseUrl}/${postId}/comments`)
             .then(response => {
                 const commentList = document.getElementById('commentList');
                 commentList.innerHTML = '';
-                response.data.forEach(comment => {
-                    const commentRow = document.createElement('tr');
-                    commentRow.innerHTML = `<td>${comment.content}</td>`;
-                    commentList.appendChild(commentRow);
-                });
+                if (response.data.length > 0) {
+                    response.data.forEach(comment => {
+                        const commentRow = document.createElement('tr');
+                        commentRow.innerHTML = `<td>${comment.content}</td>`;
+                        commentList.appendChild(commentRow);
+                    });
+                } else {
+                    commentList.innerHTML = '<tr><td>No comments available</td></tr>';
+                }
             });
     };
 
