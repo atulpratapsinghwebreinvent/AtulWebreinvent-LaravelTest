@@ -266,8 +266,8 @@
 
                 }
 
-            })
-        $('#postFormModal').modal('show');
+            });
+        $(`#postFormModal`).modal('show');
 
     };
 
@@ -302,6 +302,12 @@
 
         if (!content.trim()) {
             showMessage('Comment is required', 'danger');
+            return;
+        }
+        if (content.length > 255)
+        {
+            showMessage('Comment Content Length is extended', 'danger');
+            $('#commentFormModal').modal('hide');
             return;
         }
         axios.post(`${apiBaseUrl}/${postId}/comments`, { content })
