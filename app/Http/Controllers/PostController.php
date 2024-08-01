@@ -66,18 +66,5 @@ class PostController extends Controller
     }
 
 
-    public function storeComment(Request $request, Post $post)
-    {
-        $request->validate([
-            'content' => 'required|string',
-        ]);
-
-        $comment = new Comment();
-        $comment->content = $request->input('content');
-        $comment->commentable_id = $post->id;
-        $comment->commentable_type = Post::class;
-        $comment->save();
-
-        return response()->json($comment, 201);
-    }
+    
 }

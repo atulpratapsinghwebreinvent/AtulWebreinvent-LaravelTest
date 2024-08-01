@@ -9,28 +9,29 @@ use App\Models\Comment;
 
 class CommentController extends Controller
 {
-
     public function index($id)
     {
-
+       
+        $task = Task::find($id);
         $post = Post::find($id);
+    
+        
+        if ($task) {
+            $comments = Comment::where('commentable_type', Task::class)
+                ->where('commentable_id', $id)
+                ->get();
+            return response()->json($comments);
+        }
         if ($post) {
             $comments = Comment::where('commentable_type', Post::class)
                 ->where('commentable_id', $id)
                 ->get();
-        } else {
-            $task = Task::find($id);
-            if ($task) {
-                $comments = Comment::where('commentable_type', Task::class)
-                    ->where('commentable_id', $id)
-                    ->get();
-            } else {
-                return response()->json(['error' => 'Resource not found'], 404);
-            }
+            return response()->json($comments);
         }
-
-        return response()->json($comments);
+       
+        return response()->json(['error' => 'Task not found'], 404);
     }
+    
 
 
     public function store(Request $request, $id)

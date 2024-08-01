@@ -209,37 +209,26 @@
         currentPostId = taskId;
         $('#commentModal').modal('show');
     };
-    const viewComments = (entityId, entityType) => {
-        // Validate the entity type
-        const validTypes = ['tasks', 'posts'];
-        if (!validTypes.includes(entityType)) {
-            console.error('Invalid entity type');
-            showMessage('Invalid entity type', 'danger');
-            return;
-        }
+    const viewComments = (taskId) => {
+    axios.get(`${apiBaseUrl}/${taskId}/comments`)
+        .then(response => {
+            const commentList = document.getElementById('commentList');
+            commentList.innerHTML = '';
+            if (response.data.length > 0) {
+                response.data.forEach(comment => {
+                    const commentRow = document.createElement('tr');
+                    commentRow.innerHTML = `<td>${comment.content}</td>`;
+                    commentList.appendChild(commentRow);
+                });
+            } else {
+                commentList.innerHTML = '<tr><td>No comments available</td></tr>';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching comments:', error);
+        });
+};
 
-        // Define the endpoint based on the entity type
-        const endpoint = `${apiBaseUrl}/${entityId}/comments`;
-
-        axios.get(endpoint)
-            .then(response => {
-                const commentList = document.getElementById('commentList');
-                commentList.innerHTML = '';
-
-                if (response.data.length === 0) {
-                    const noCommentsRow = document.createElement('tr');
-                    noCommentsRow.innerHTML = '<td colspan="1">No comments found</td>';
-                    commentList.appendChild(noCommentsRow);
-                } else {
-                    response.data.forEach(comment => {
-                        const commentRow = document.createElement('tr');
-                        commentRow.innerHTML = `<td>${comment.content}</td>`;
-                        commentList.appendChild(commentRow);
-                    });
-                }
-            })
-
-    };
 
     const saveComment = (event) => {
         event.preventDefault();
