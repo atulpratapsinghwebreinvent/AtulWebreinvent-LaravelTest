@@ -56,7 +56,7 @@ class PostController extends Controller
         return response()->json(null, 204);
     }
 
-    // View comments for a specific post
+
     public function viewComments($postId)
     {
         $post = Post::findOrFail($postId);
@@ -65,7 +65,7 @@ class PostController extends Controller
         return view('commentsView', compact('post', 'comments'));
     }
 
-    // Store a new comment for a specific post
+
     public function storeComment(Request $request, Post $post)
     {
         $request->validate([

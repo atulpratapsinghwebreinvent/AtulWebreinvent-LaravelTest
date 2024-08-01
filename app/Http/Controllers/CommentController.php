@@ -9,13 +9,7 @@ use App\Models\Comment;
 
 class CommentController extends Controller
 {
-    /**
-     * Display a listing of the comments for a given post or task.
-     *
-     * @param string $type
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function index($id)
     {
         // Check if the model exists and fetch comments accordingly
@@ -38,32 +32,33 @@ class CommentController extends Controller
         return response()->json($comments);
     }
 
-    /**
-     * Store a newly created comment for a given post or task.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function store(Request $request, $id)
     {
         $request->validate([
-            'content' => 'required|string|max:255',
+            'content' => 'required|string',
         ]);
 
-        // Determine the model and store the comment
+        // Initialize commentable_type as null
+        $commentable_type = null;
+
         $post = Post::find($id);
+        $task = Task::find($id);
         if ($post) {
             $commentable_type = Post::class;
         } else {
-            $task = Task::find($id);
+
             if ($task) {
                 $commentable_type = Task::class;
-            } else {
-                return response()->json(['error' => 'Resource not found'], 404);
             }
         }
 
+
+        if (!$commentable_type) {
+            return response()->json(['error' => 'Resource not found'], 404);
+        }
+
+        // Create and save the comment
         $comment = new Comment();
         $comment->content = $request->input('content');
         $comment->commentable_id = $id;
@@ -73,12 +68,8 @@ class CommentController extends Controller
         return response()->json($comment, 201);
     }
 
-    /**
-     * Remove the specified comment from storage.
-     *
-     * @param int $commentId
-     * @return \Illuminate\Http\Response
-     */
+
+
     public function destroy($commentId)
     {
         $comment = Comment::findOrFail($commentId);
