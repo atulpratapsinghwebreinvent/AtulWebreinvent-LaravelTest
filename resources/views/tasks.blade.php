@@ -244,37 +244,51 @@
             });
     };
 
-    const saveComment = (event) => {
+    const saveComment = (event, entityId, entityType) => {
         event.preventDefault();
-        const content = document.getElementById('commentContent').value;
-        const postId = currentPostId;
 
-        if (!content.trim()) {
-            showMessage('Comment is required', 'danger');
+        // Validate the entity type
+        const validTypes = ['tasks', 'posts'];
+        if (!validTypes.includes(entityType)) {
+            console.error('Invalid entity type');
+            showMessage('Invalid entity type', 'danger');
             return;
         }
-        axios.post(`${apiBaseUrl}/${postId}/comments`, { content })
+
+        const content = document.getElementById('commentContent').value;
+        if (!content.trim()) {
+            showMessage('Comment content is required', 'danger');
+            return;
+        }
+
+        // Define the endpoint based on the entity type
+        const endpoint = `${apiBaseUrl}/${entityType}/${entityId}/comments`;
+
+        axios.post(endpoint, { content })
             .then(response => {
                 showMessage('Comment added successfully');
                 document.getElementById('commentContent').value = '';
-                $('#commentFormModal').modal('hide');
+                $('#commentModal').modal('hide'); // Hide the comment modal
 
-                const commentsCountElement = document.getElementById(`comments-count-${postId}`);
+                const commentsCountElement = document.getElementById(`comments-count-${entityId}`);
                 if (commentsCountElement) {
                     const currentCount = parseInt(commentsCountElement.innerText, 10);
                     commentsCountElement.innerText = currentCount + 1;
                 }
+            })
+            .catch(error => {
+                console.error('There was an error adding the comment!', error);
+                showMessage('Failed to add comment', 'danger');
             });
     };
-
 
     // Adjust the event listeners for forms
     document.addEventListener('DOMContentLoaded', () => {
         const commentForm = document.getElementById('commentForm');
         commentForm.addEventListener('submit', (event) => {
-
-            const entityId = currentPostId;
-            const entityType = 'tasks';
+            // Replace with actual entity ID and type
+            const entityId = currentPostId; // Replace with actual entity ID
+            const entityType = 'tasks'; // or 'posts', based on context
             saveComment(event, entityId, entityType);
         });
     });

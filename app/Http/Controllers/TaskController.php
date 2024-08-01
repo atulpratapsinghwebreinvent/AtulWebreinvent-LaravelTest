@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\Comment;
+use App\Models\Post;
 use App\Models\Task;
 use Illuminate\Http\Request;
 
@@ -35,12 +35,25 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255',
             'description' => 'required|string',
-
+            'comments' => 'array',
+            'comments.*.content' => 'required|string',
         ]);
 
 
-        $post = Task::create($request->only(['title', 'slug', 'content']));
-        return response()->json($post, 201);
+        $task = Task::create($request->only(['title', 'slug', 'description']));
+
+
+        if ($request->has('comments')) {
+            foreach ($request->input('comments') as $commentData) {
+                $task->comments()->create([
+                    'content' => $commentData['content'],
+                    'commentable_type' => Task::class,
+                    'commentable_id' => $task->id
+                ]);
+            }
+        }
+
+        return response()->json($task, 201);
     }
 
 
@@ -88,19 +101,5 @@ class TaskController extends Controller
         $task->delete();
 
         return response()->json(null, 205);
-    }
-    public function storeComment(Request $request, Task $post)
-    {
-        $request->validate([
-            'content' => 'required|string',
-        ]);
-
-        $comment = new Comment();
-        $comment->content = $request->input('content');
-        $comment->commentable_id = $post->id;
-        $comment->commentable_type = Task::class;
-        $comment->save();
-
-        return response()->json($comment, 201);
     }
 }
