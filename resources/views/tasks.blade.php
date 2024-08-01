@@ -70,13 +70,14 @@
             </div>
             <div class="modal-body">
                 <form id="postForm">
+                    <div id="errorMessages" class="alert alert-danger d-none"></div>
                     <div class="form-group">
                         <label for="title">Task Title</label>
-                        <input type="text" id="title" class="form-control" required>
+                        <input type="text" id="title" class="form-control">
                     </div>
                     <div class="form-group">
                         <label for="content">Task Description</label>
-                        <textarea id="content" class="form-control" required></textarea>
+                        <textarea id="content" class="form-control"></textarea>
                     </div>
                     <button type="submit" id="submitBtn" class="btn btn-primary">Add Task</button>
                     <button type="reset" id="cancelBtn" class="btn btn-secondary">Reset</button>
@@ -125,8 +126,17 @@
         }, 3000);
     };
 
+    const showErrorMessages = (errors) => {
+        const errorMessagesElement = document.getElementById('errorMessages');
+        errorMessagesElement.innerHTML = errors.join('<br>');
+        errorMessagesElement.classList.remove('d-none');
+        setTimeout(() => {
+            errorMessagesElement.classList.add('d-none');
+        }, 3000);
+    };
+
     const generateSlug = (title) => {
-        return title.toLowerCase().replace(/\s+/g, '-');
+        return title.toLowerCase();
     };
 
     const fetchTasks = () => {
@@ -147,10 +157,13 @@
                             <button class="btn btn-warning btn-sm" onclick="editTask(${task.id}, '${task.title}', '${task.description}')">Edit</button>
                             <button class="btn btn-danger btn-sm" onclick="deleteTask(${task.id})">Delete</button>
                             <button class="btn btn-info btn-sm" onclick="showCommentForm(${task.id})">Add Comment</button>
-<button class="btn btn-info btn-sm" onclick="viewComments(${task.id}, 'tasks')">View Comments</button>
+                            <button class="btn btn-info btn-sm" onclick="viewComments(${task.id})">View Comments</button>
                          </td>`;
                     postList.appendChild(taskRow);
                 });
+            })
+            .catch(error => {
+                showMessage('Failed to fetch tasks. Please try again.', 'danger');
             });
     };
 
@@ -161,29 +174,61 @@
         const title = titleInput.value;
         const description = contentInput.value;
 
+        const errors = [];
         if (!title.trim()) {
-            showMessage('Task Title is required', 'danger');
+            errors.push('Task Title is required.');
+        }
+
+        if (description.length > 255) {
+            errors.push('Task Description length should be 255 characters or less.');
+        }
+
+        if (errors.length > 0) {
+            showErrorMessages(errors);
             return;
         }
-        const slug = generateSlug(title);
-        const taskData = { title, slug, description };
 
-        if (editMode && currentPostId != null) {
-            axios.put(`${apiBaseUrl}/${currentPostId}`, taskData)
-                .then(response => {
-                    showMessage('Task updated successfully');
-                    resetForm();
-                    fetchTasks();
-                    $('#taskModal').modal('hide');
-                });
-        } else {
-            axios.post(apiBaseUrl, taskData)
-                .then(response => {
-                    showMessage('Task created successfully');
-                    fetchTasks();
-                    $('#taskModal').modal('hide');
-                });
-        }
+        axios.get(apiBaseUrl)
+            .then(response => {
+                const existingTasks = response.data;
+                const isDuplicate = existingTasks.some(task => task.title.trim().toLowerCase() === title.trim().toLowerCase() && task.id !== currentPostId);
+
+                if (isDuplicate) {
+                    showMessage('A task with the same title already exists', 'danger');
+                    return;
+                }
+
+                const slug = generateSlug(title);
+                const taskData = { title, slug, description };
+
+                if (editMode && currentPostId != null) {
+                    axios.put(`${apiBaseUrl}/${currentPostId}`, taskData)
+                        .then(response => {
+                            showMessage('Task updated successfully');
+                            resetForm();
+                            fetchTasks();
+                            $('#taskModal').modal('hide');
+                        })
+                        .catch(error => {
+                            showMessage('Failed to update task. Please try again.', 'danger');
+                            $('#taskModal').modal('hide');
+                        });
+                } else {
+                    axios.post(apiBaseUrl, taskData)
+                        .then(response => {
+                            showMessage('Task created successfully');
+                            fetchTasks();
+                            $('#taskModal').modal('hide');
+                        })
+                        .catch(error => {
+                            showMessage('Failed to create task. Please try again.', 'danger');
+                            $('#taskModal').modal('hide');
+                        });
+                }
+            })
+            .catch(error => {
+                showMessage('Failed to check for duplicate tasks. Please try again.', 'danger');
+            });
     };
 
     const deleteTask = (id) => {
@@ -192,6 +237,9 @@
                 .then(response => {
                     showMessage('Task deleted successfully', 'danger');
                     fetchTasks();
+                })
+                .catch(error => {
+                    showMessage('Failed to delete task. Please try again.', 'danger');
                 });
         }
     };
@@ -202,48 +250,63 @@
         currentPostId = id;
         editMode = true;
         document.getElementById('submitBtn').textContent = 'Update Task';
-        $('#taskModal').modal('show');
+
+        // Validate title against duplicates before opening modal
+        axios.get(apiBaseUrl)
+            .then(response => {
+                const existingTasks = response.data;
+                const isDuplicate = existingTasks.some(task => task.title.trim().toLowerCase() === title.trim().toLowerCase() && task.id !== id);
+
+                if (isDuplicate) {
+                    showMessage('A task with the same title already exists', 'danger');
+                    return;
+                }
+
+                $('#taskModal').modal('show');
+            })
+            .catch(error => {
+                showMessage('Failed to check for duplicate tasks. Please try again.', 'danger');
+            });
     };
 
     const showCommentForm = (taskId) => {
         currentPostId = taskId;
         $('#commentModal').modal('show');
     };
-    const viewComments = (taskId) => {
-    axios.get(`${apiBaseUrl}/${taskId}/comments`)
-        .then(response => {
-            const commentList = document.getElementById('commentList');
-            commentList.innerHTML = '';
-            if (response.data.length > 0) {
-                response.data.forEach(comment => {
-                    const commentRow = document.createElement('tr');
-                    commentRow.innerHTML = `<td>${comment.content}</td>`;
-                    commentList.appendChild(commentRow);
-                });
-            } else {
-                commentList.innerHTML = '<tr><td>No comments available</td></tr>';
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching comments:', error);
-        });
-};
 
+    const viewComments = (taskId) => {
+        axios.get(`${apiBaseUrl}/${taskId}/comments`)
+            .then(response => {
+                const commentList = document.getElementById('commentList');
+                commentList.innerHTML = '';
+                if (response.data.length > 0) {
+                    response.data.forEach(comment => {
+                        const commentRow = document.createElement('tr');
+                        commentRow.innerHTML = `<td>${comment.content}</td>`;
+                        commentList.appendChild(commentRow);
+                    });
+                } else {
+                    commentList.innerHTML = '<tr><td>No comments available</td></tr>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching comments:', error);
+            });
+    };
 
     const saveComment = (event) => {
         event.preventDefault();
-
-        // Validate the entity type
-
-
         const content = document.getElementById('commentContent').value;
         const entityId = currentPostId;
         if (!content.trim()) {
             showMessage('Comment content is required', 'danger');
             return;
         }
-
-        // Define the endpoint based on the entity type
+        if (content.length > 255) {
+            showMessage('Comment Content Length is extended', 'danger');
+            $('#commentModal').modal('hide');
+            return;
+        }
         axios.post(`${apiBaseUrl}/${entityId}/comments`, { content })
             .then(response => {
                 showMessage('Comment added successfully');
@@ -256,13 +319,15 @@
                     commentsCountElement.innerText = currentCount + 1;
                 }
             })
-
+            .catch(error => {
+                showMessage('Failed to add comment. Please try again.', 'danger');
+            });
     };
 
-    // Adjust the event listeners for forms
     const resetForm = () => {
         document.getElementById('title').value = '';
         document.getElementById('content').value = '';
+        document.getElementById('errorMessages').classList.add('d-none');
     };
 
     function openTaskModal() {

@@ -74,21 +74,19 @@
             </div>
             <div class="modal-body">
                 <form id="postForm">
-                    @csrf
                     <div id="errorMessages" class="alert alert-danger d-none"></div>
 
                     <div class="form-group">
                         <label for="title">Post Title</label>
-                        <input type="text" id="title" class="form-control" >
+                        <input type="text" id="title" class="form-control">
                     </div>
                     <div class="form-group">
                         <label for="content">Post Content</label>
-                        <textarea id="content" class="form-control" rows="5" ></textarea>
+                        <textarea id="content" class="form-control" rows="5"></textarea>
                     </div>
                     <button type="submit" id="submitBtn" class="btn btn-primary mr-2">Add Post</button>
                     <button type="reset" id="cancelBtn" class="btn btn-secondary">Reset</button>
                 </form>
-
             </div>
         </div>
     </div>
@@ -108,7 +106,7 @@
                 <form id="commentForm">
                     <div class="form-group">
                         <label for="commentContent">Comment</label>
-                        <textarea id="commentContent" class="form-control" required></textarea>
+                        <textarea id="commentContent" class="form-control"></textarea>
                     </div>
                     <button type="submit" id="commentSubmitBtn" class="btn btn-primary">Add Comment</button>
                 </form>
@@ -132,8 +130,17 @@
         }, 3000);
     };
 
+    const showErrorMessages = (errors) => {
+        const errorMessagesElement = document.getElementById('errorMessages');
+        errorMessagesElement.innerHTML = errors.join('<br>');
+        errorMessagesElement.classList.remove('d-none');
+        setTimeout(() => {
+            errorMessagesElement.classList.add('d-none');
+        }, 3000);
+    };
+
     const generateSlug = (title) => {
-        return title.toLowerCase();
+        return title.toLowerCase().replace(/\s+/g, '-');
     };
 
     const fetchPosts = () => {
@@ -154,12 +161,15 @@
                         <td>
                             <button class="btn btn-warning btn-sm" onclick="editPost(${post.id}, '${post.title}', '${post.content}')">Edit</button>
                             <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
-                            <button class="btn btn-info btn-sm" onclick="showCommentForm(${post.id})">Add Comments</button>
+                            <button class="btn btn-info btn-sm" onclick="showCommentForm(${post.id})">Add Comment</button>
                             <button class="btn btn-primary btn-sm" onclick="viewComments(${post.id})">View Comments</button>
                         </td>
                     `;
                     postList.appendChild(postRow);
                 });
+            })
+            .catch(error => {
+                showMessage('Failed to fetch posts. Please try again.', 'danger');
             });
     };
 
@@ -171,16 +181,15 @@
         const title = titleInput.value.trim();
         const content = contentInput.value.trim();
 
-
+        const errors = [];
         if (!title) {
-            showMessage('Post Title is required', 'danger');
-            $('#postFormModal').modal('hide');
-            return;
+            errors.push('Post Title is required.');
         }
-
         if (content.length > 255) {
-            showMessage('Content Length is extended', 'danger');
-            $('#postFormModal').modal('hide');
+            errors.push('Post Content length should be 255 characters or less.');
+        }
+        if (errors.length > 0) {
+            showErrorMessages(errors);
             return;
         }
 
@@ -191,7 +200,6 @@
 
                 if (isDuplicate) {
                     showMessage('A post with the same title already exists', 'danger');
-                    $('#postFormModal').modal('hide');
                     return;
                 }
 
@@ -206,7 +214,8 @@
                             $('#postFormModal').modal('hide');
                         })
                         .catch(error => {
-                            showMessage('Failed to update the post. Please try again.', 'danger');
+                            showMessage('Failed to update post. Please try again.', 'danger');
+                            $('#postFormModal').modal('hide');
                         });
                 } else {
                     axios.post(apiBaseUrl, postData)
@@ -216,10 +225,10 @@
                             $('#postFormModal').modal('hide');
                         })
                         .catch(error => {
-                            showMessage('Failed to create the post. Please try again.', 'danger');
+                            showMessage('Failed to create post.', 'danger');
+                            $('#postFormModal').modal('hide');
                         });
                 }
-
 
                 titleInput.value = '';
                 contentInput.value = '';
@@ -227,9 +236,10 @@
                 editMode = false;
                 currentPostId = null;
             })
-
+            .catch(error => {
+                showMessage('Failed to validate post. Please try again.', 'danger');
+            });
     };
-
 
     const deletePost = (id) => {
         if (confirm('Are you sure you want to delete this post?')) {
@@ -237,6 +247,9 @@
                 .then(response => {
                     showMessage('Post deleted successfully', 'danger');
                     fetchPosts();
+                })
+                .catch(error => {
+                    showMessage('Failed to delete post. Please try again.', 'danger');
                 });
         }
     };
@@ -248,9 +261,8 @@
         editMode = true;
         document.getElementById('submitBtn').textContent = 'Update Post';
 
-        if(content.length > 255)
-        {
-            showMessage('Content Length is extended', 'danger');
+        if (content.length > 255) {
+            showMessage('Post Content length is extended', 'danger');
             $('#postFormModal').modal('hide');
             return;
         }
@@ -263,12 +275,14 @@
                 if (isDuplicate) {
                     showMessage('A post with the same title already exists', 'danger');
                     $('#postFormModal').modal('hide');
-
+                    return;
                 }
 
+                $(`#postFormModal`).modal('show');
+            })
+            .catch(error => {
+                showMessage('Failed to validate post. Please try again.', 'danger');
             });
-        $(`#postFormModal`).modal('show');
-
     };
 
     const showCommentForm = (postId) => {
@@ -277,8 +291,6 @@
     };
 
     const viewComments = (postId) => {
-        currentPostId = postId;
-        $('#commentFormModal').modal('hide');
         axios.get(`${apiBaseUrl}/${postId}/comments`)
             .then(response => {
                 const commentList = document.getElementById('commentList');
@@ -292,6 +304,9 @@
                 } else {
                     commentList.innerHTML = '<tr><td>No comments available</td></tr>';
                 }
+            })
+            .catch(error => {
+                showMessage('Failed to fetch comments. Please try again.', 'danger');
             });
     };
 
@@ -304,9 +319,8 @@
             showMessage('Comment is required', 'danger');
             return;
         }
-        if (content.length > 255)
-        {
-            showMessage('Comment Content Length is extended', 'danger');
+        if (content.length > 255) {
+            showMessage('Comment content length should be 255 characters or less', 'danger');
             $('#commentFormModal').modal('hide');
             return;
         }
@@ -321,6 +335,9 @@
                     const currentCount = parseInt(commentsCountElement.innerText, 10);
                     commentsCountElement.innerText = currentCount + 1;
                 }
+            })
+            .catch(error => {
+                showMessage('Failed to add comment. Please try again.', 'danger');
             });
     };
 
