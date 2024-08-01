@@ -226,9 +226,7 @@
                             fetchPosts();
                             $('#postFormModal').modal('hide');
                         })
-                        .catch(error => {
-                            showMessage('Failed to create post. Please try again.', 'danger');
-                        });
+
                 }
 
                 titleInput.value = '';
@@ -237,9 +235,7 @@
                 editMode = false;
                 currentPostId = null;
             })
-            .catch(error => {
-                showMessage('Failed to validate post. Please try again.', 'danger');
-            });
+
     };
 
 

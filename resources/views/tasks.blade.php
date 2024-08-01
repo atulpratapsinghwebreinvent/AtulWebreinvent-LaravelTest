@@ -314,9 +314,7 @@
                     commentsCountElement.innerText = currentCount + 1;
                 }
             })
-            .catch(error => {
-                showMessage('Failed to add comment. Please try again.', 'danger');
-            });
+
     };
 
     const resetForm = () => {
