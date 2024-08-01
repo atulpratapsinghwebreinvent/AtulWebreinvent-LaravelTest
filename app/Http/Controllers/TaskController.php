@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\Comment;
 use App\Models\Post;
 use App\Models\Task;
 use Illuminate\Http\Request;
@@ -35,8 +36,7 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255',
             'description' => 'required|string',
-            'comments' => 'array',
-            'comments.*.content' => 'required|string',
+
         ]);
 
 
