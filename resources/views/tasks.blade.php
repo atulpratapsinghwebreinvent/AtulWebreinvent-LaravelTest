@@ -293,6 +293,7 @@
         event.preventDefault();
         const content = document.getElementById('commentContent').value;
         const entityId = currentPostId;
+        console.log(entityId);
         if (!content.trim()) {
             showMessage('Comment content is required', 'danger');
             return;

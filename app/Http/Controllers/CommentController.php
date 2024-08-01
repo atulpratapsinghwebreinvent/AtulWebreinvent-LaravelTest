@@ -11,11 +11,11 @@ class CommentController extends Controller
 {
     public function index($id)
     {
-       
+
         $task = Task::find($id);
         $post = Post::find($id);
-    
-        
+
+
         if ($task) {
             $comments = Comment::where('commentable_type', Task::class)
                 ->where('commentable_id', $id)
@@ -28,10 +28,10 @@ class CommentController extends Controller
                 ->get();
             return response()->json($comments);
         }
-       
+
         return response()->json(['error' => 'Task not found'], 404);
     }
-    
+
 
 
     public function store(Request $request, $id)
@@ -43,23 +43,23 @@ class CommentController extends Controller
         // Determine the model and store the comment
         $commentable_type = null;
         $post = Post::find($id);
-        if ($post) {  
+        $task = Task::find($id);
+        if ($post) {
             $commentable_type = Post::class;
-        } else {
-            $task = Task::find($id);
-            if ($task) {
-               
-                $commentable_type = Task::class;
-                
-            } 
+
+
         }
-        
+        if($task)
+        {
+
+            $commentable_type = Task::class;
+        }
+
 
         $comment = new Comment();
         $comment->content = $request->input('content');
         $comment->commentable_id = $id;
         $comment->commentable_type = $commentable_type;
-        // dd($commentable_type);
         $comment->save();
 
         return response()->json($comment, 201);
