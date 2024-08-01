@@ -250,8 +250,8 @@
         currentPostId = id;
         editMode = true;
         document.getElementById('submitBtn').textContent = 'Update Task';
+        $('#taskModal').modal('show');
 
-        // Validate title against duplicates before opening modal
         axios.get(apiBaseUrl)
             .then(response => {
                 const existingTasks = response.data;
@@ -259,14 +259,9 @@
 
                 if (isDuplicate) {
                     showMessage('A task with the same title already exists', 'danger');
-                    return;
+                    $('#taskModal').modal('hide');
                 }
-
-                $('#taskModal').modal('show');
             })
-            .catch(error => {
-                showMessage('Failed to check for duplicate tasks. Please try again.', 'danger');
-            });
     };
 
     const showCommentForm = (taskId) => {

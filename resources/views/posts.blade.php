@@ -199,7 +199,10 @@
                 const isDuplicate = existingPosts.some(post => post.title.trim().toLowerCase() === title.toLowerCase() && post.id !== currentPostId);
 
                 if (isDuplicate) {
-                    showMessage('A post with the same title already exists', 'danger');
+                    $('#postFormModal').modal('hide');
+                    $('#postFormModal').on('hidden.bs.modal', () => {
+                        showMessage('A post with the same title already exists', 'danger');
+                    });
                     return;
                 }
 
@@ -215,7 +218,6 @@
                         })
                         .catch(error => {
                             showMessage('Failed to update post. Please try again.', 'danger');
-                            $('#postFormModal').modal('hide');
                         });
                 } else {
                     axios.post(apiBaseUrl, postData)
@@ -225,8 +227,7 @@
                             $('#postFormModal').modal('hide');
                         })
                         .catch(error => {
-                            showMessage('Failed to create post.', 'danger');
-                            $('#postFormModal').modal('hide');
+                            showMessage('Failed to create post. Please try again.', 'danger');
                         });
                 }
 
@@ -240,6 +241,7 @@
                 showMessage('Failed to validate post. Please try again.', 'danger');
             });
     };
+
 
     const deletePost = (id) => {
         if (confirm('Are you sure you want to delete this post?')) {
@@ -273,17 +275,20 @@
                 const isDuplicate = existingPosts.some(post => post.title.trim().toLowerCase() === title.trim().toLowerCase() && post.id !== id);
 
                 if (isDuplicate) {
-                    showMessage('A post with the same title already exists', 'danger');
                     $('#postFormModal').modal('hide');
+                    $('#postFormModal').on('hidden.bs.modal', () => {
+                        showMessage('A post with the same title already exists', 'danger');
+                    });
                     return;
                 }
 
-                $(`#postFormModal`).modal('show');
+                $('#postFormModal').modal('show');
             })
             .catch(error => {
                 showMessage('Failed to validate post. Please try again.', 'danger');
             });
     };
+
 
     const showCommentForm = (postId) => {
         currentPostId = postId;
