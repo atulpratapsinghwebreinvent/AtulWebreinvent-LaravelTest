@@ -75,17 +75,20 @@
             <div class="modal-body">
                 <form id="postForm">
                     @csrf
+                    <div id="errorMessages" class="alert alert-danger d-none"></div>
+
                     <div class="form-group">
                         <label for="title">Post Title</label>
-                        <input type="text" id="title" class="form-control" required>
+                        <input type="text" id="title" class="form-control" >
                     </div>
                     <div class="form-group">
                         <label for="content">Post Content</label>
-                        <textarea id="content" class="form-control" rows="5" required></textarea>
+                        <textarea id="content" class="form-control" rows="5" ></textarea>
                     </div>
                     <button type="submit" id="submitBtn" class="btn btn-primary mr-2">Add Post</button>
                     <button type="reset" id="cancelBtn" class="btn btn-secondary">Reset</button>
                 </form>
+
             </div>
         </div>
     </div>
@@ -130,7 +133,7 @@
     };
 
     const generateSlug = (title) => {
-        return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]/g, '');
+        return title.toLowerCase();
     };
 
     const fetchPosts = () => {
@@ -169,7 +172,16 @@
 
         if (!title.trim()) {
             showMessage('Post Title is required', 'danger');
+            $('#postFormModal').modal('hide');
             return;
+        }
+
+        if(content.length > 255)
+        {
+            showMessage('Content Length is extended', 'danger');
+
+            $('#postFormModal').modal('hide');
+           return;
         }
 
         const slug = generateSlug(title);
@@ -188,7 +200,8 @@
                     showMessage('Post created successfully');
                     fetchPosts();
                     $('#postFormModal').modal('hide');
-                });
+                })
+
         }
 
         titleInput.value = '';
