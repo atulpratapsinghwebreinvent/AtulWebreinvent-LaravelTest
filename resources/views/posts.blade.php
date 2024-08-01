@@ -165,51 +165,71 @@
 
     const savePost = (event) => {
         event.preventDefault();
+
         const titleInput = document.getElementById('title');
         const contentInput = document.getElementById('content');
-        const title = titleInput.value;
-        const content = contentInput.value;
+        const title = titleInput.value.trim();
+        const content = contentInput.value.trim();
 
-        if (!title.trim()) {
+
+        if (!title) {
             showMessage('Post Title is required', 'danger');
             $('#postFormModal').modal('hide');
             return;
         }
 
-        if(content.length > 255)
-        {
+        if (content.length > 255) {
             showMessage('Content Length is extended', 'danger');
-
             $('#postFormModal').modal('hide');
-           return;
+            return;
         }
 
-        const slug = generateSlug(title);
-        const postData = { title, slug, content };
+        axios.get(apiBaseUrl)
+            .then(response => {
+                const existingPosts = response.data;
+                const isDuplicate = existingPosts.some(post => post.title.trim().toLowerCase() === title.toLowerCase() && post.id !== currentPostId);
 
-        if (editMode && currentPostId != null) {
-            axios.put(`${apiBaseUrl}/${currentPostId}`, postData)
-                .then(response => {
-                    showMessage('Post updated successfully');
-                    fetchPosts();
+                if (isDuplicate) {
+                    showMessage('A post with the same title already exists', 'danger');
                     $('#postFormModal').modal('hide');
-                });
-        } else {
-            axios.post(apiBaseUrl, postData)
-                .then(response => {
-                    showMessage('Post created successfully');
-                    fetchPosts();
-                    $('#postFormModal').modal('hide');
-                })
+                    return;
+                }
 
-        }
+                const slug = generateSlug(title);
+                const postData = { title, slug, content };
 
-        titleInput.value = '';
-        contentInput.value = '';
-        document.getElementById('submitBtn').textContent = 'Add Post';
-        editMode = false;
-        currentPostId = null;
+                if (editMode && currentPostId != null) {
+                    axios.put(`${apiBaseUrl}/${currentPostId}`, postData)
+                        .then(response => {
+                            showMessage('Post updated successfully');
+                            fetchPosts();
+                            $('#postFormModal').modal('hide');
+                        })
+                        .catch(error => {
+                            showMessage('Failed to update the post. Please try again.', 'danger');
+                        });
+                } else {
+                    axios.post(apiBaseUrl, postData)
+                        .then(response => {
+                            showMessage('Post created successfully');
+                            fetchPosts();
+                            $('#postFormModal').modal('hide');
+                        })
+                        .catch(error => {
+                            showMessage('Failed to create the post. Please try again.', 'danger');
+                        });
+                }
+
+
+                titleInput.value = '';
+                contentInput.value = '';
+                document.getElementById('submitBtn').textContent = 'Add Post';
+                editMode = false;
+                currentPostId = null;
+            })
+
     };
+
 
     const deletePost = (id) => {
         if (confirm('Are you sure you want to delete this post?')) {
@@ -227,7 +247,28 @@
         currentPostId = id;
         editMode = true;
         document.getElementById('submitBtn').textContent = 'Update Post';
+
+        if(content.length > 255)
+        {
+            showMessage('Content Length is extended', 'danger');
+            $('#postFormModal').modal('hide');
+            return;
+        }
+
+        axios.get(apiBaseUrl)
+            .then(response => {
+                const existingPosts = response.data;
+                const isDuplicate = existingPosts.some(post => post.title.trim().toLowerCase() === title.trim().toLowerCase() && post.id !== id);
+
+                if (isDuplicate) {
+                    showMessage('A post with the same title already exists', 'danger');
+                    $('#postFormModal').modal('hide');
+
+                }
+
+            })
         $('#postFormModal').modal('show');
+
     };
 
     const showCommentForm = (postId) => {
